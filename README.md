@@ -4,7 +4,8 @@
 
 This repo includes the manifests for packaging [go-neb](https://github.com/matrix-org/go-neb)
 as a Helm Chart. It also has defined CI automation for testing and deploying the
-chart on reepo changes.
+chart on repo changes. The bot itself is configured to just respond to `echo`
+commands, the main usage currently is showing alertmanager notifications.
 
 ## Files
 
@@ -23,6 +24,9 @@ service resources it contains manifests for these custom resources:
 
   * `persistentvolumeclaim`: declares a persistent storage for the bot database,
   so that if the bot container is restarted the state can be recovered.
+
+  * `configmap`: basic configuration of the bot, sets the access token and only
+  enables the `echo` service.
 
   In order to be able to deploy to production, these environment variables must be
   available:
