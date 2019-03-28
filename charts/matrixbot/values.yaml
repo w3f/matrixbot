@@ -9,3 +9,4 @@ image:
   tag: latest
 
 accessToken: ""
+alertRoomId: "!utBTXcSTXrMrBJpfti:matrix.org"

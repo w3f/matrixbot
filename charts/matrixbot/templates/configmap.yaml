@@ -13,6 +13,15 @@ data:
         DisplayName: "w3fbot"
 
     services:
+      - ID: "promalerts"
+        Type: "alertmanager"
+        UserID: "@w3fbot:matrix.org"
+        Config:
+          webhook_url: "/prom_alerts"
+          rooms:
+            "{{ .Values.alertRoomId}}":
+              text_template: "{{ `{{ range .Alerts }}{{if .Annotations.summary }}\nsummary: {{ .Annotations.summary }}{{end}}{{if .Annotations.description}}\ndescription: {{ .Annotations.description }}{{end}}{{if .Annotations.message}}\nmessage: {{ .Annotations.message }}{{end}}{{end}}` }}"
+              msg_type: "m.text"
       - ID: "echoid"
         Type: "echo"
         UserID: "@w3fbot:matrix.org"

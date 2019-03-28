@@ -25,8 +25,8 @@ service resources it contains manifests for these custom resources:
   * `persistentvolumeclaim`: declares a persistent storage for the bot database,
   so that if the bot container is restarted the state can be recovered.
 
-  * `configmap`: basic configuration of the bot, sets the access token and only
-  enables the `echo` service.
+  * `configmap`: basic configuration of the bot, sets the access token and
+  enables the `alermanager` and `echo` services.
 
   In order to be able to deploy to production, these environment variables must be
   available:
