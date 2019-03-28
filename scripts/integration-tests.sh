@@ -9,16 +9,18 @@ run_tests() {
 }
 
 teardown() {
-    helmfile delete --purge
+    helm delete --purge matrixbot
 }
 
 main(){
-    if [ -z "$KEEP_W3F_BASE_SERVICES" ]; then
+    if [ -z "$KEEP_W3F_MATRIXBOT" ]; then
         trap teardown EXIT
     fi
 
-    source ./scripts/preflight.sh
-    source /scripts/build-helmfile.sh
+    /scripts/build-helm.sh \
+        --set environment=ci \
+        matrixbot \
+        ./charts/matrixbot
 
     run_tests
 }
