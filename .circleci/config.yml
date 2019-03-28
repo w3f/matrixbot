@@ -3,32 +3,36 @@ version: 2
 jobs:
   integrationTests:
     docker:
-      - image: web3f/ci-commons:v0.1.4
+      - image: web3f/ci-commons:v0.1.5
     steps:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
           description: run integration tests
-          environment:
-            K8S_VERSION: v1.13
-            SKIP_SNAPSHOT: y
-            DIND_PORT_FORWARDER_WAIT: 1
-            DIND_PORT_FORWARDER: "/scripts/portforward.sh"
           command: |
             /scripts/integration-tests.sh
+
+  publishChart:
+    docker:
+      - image: web3f/ci-commons:v0.1.5
+    steps:
+      - checkout
+      - run:
+          command: |
+            /scripts/publish-chart.sh
 
   deploy:
     environment:
       HELM_ENV: production
     docker:
-      - image: web3f/ci-commons:v0.1.4
+      - image: web3f/ci-commons:v0.1.5
     steps:
       - checkout
       - setup_remote_docker
       - run:
           command: |
-            /scripts/deploy.sh
+            ./scripts/deploy.sh
 
 workflows:
   version: 2
@@ -38,7 +42,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - deploy:
+      - publishChart:
           filters:
             branches:
               ignore: /.*/
@@ -46,3 +50,11 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
           requires:
             - integrationTests
+      - deploy:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - publishChart
