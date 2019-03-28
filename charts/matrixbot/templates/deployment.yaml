@@ -9,6 +9,9 @@ spec:
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
+  selector:
+    matchLabels:
+      app: matrixbot
   template:
     metadata:
       labels:
@@ -22,7 +25,6 @@ spec:
         - name: http
           containerPort: {{ .Values.port }}
         env:
-          BASE_URL=http://localhost:4050 CONFIG_FILE=./config.sample.yaml
         - name: BIND_ADDRESS
           value: :{{ .Values.port }}
         - name: DATABASE_TYPE
@@ -48,9 +50,9 @@ spec:
             memory: 100Mi
         volumeMounts:
         - name: config
-          path: /etc/matrixbot
+          mountPath: /etc/matrixbot
         - name: data
-          path: /var/lib/matrixbot
+          mountPath: /var/lib/matrixbot
       volumes:
       - name: config
         configMap:
