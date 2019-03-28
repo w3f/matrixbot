@@ -1,0 +1,14 @@
+{{ if ne .Values.environment "ci" }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: matrixbot
+  labels:
+    group: w3f
+spec:
+  selector:
+    matchLabels:
+      app: matrixbot
+  endpoints:
+  - port: http
+{{ end }}

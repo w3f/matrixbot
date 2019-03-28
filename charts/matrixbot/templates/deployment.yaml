@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matrixbot
+  labels:
+    app: matrixbot
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: matrixbot
+    spec:
+      containers:
+      - name: matrixbot
+        image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: {{ .Values.port }}
+        env:
+          BASE_URL=http://localhost:4050 CONFIG_FILE=./config.sample.yaml
+        - name: BIND_ADDRESS
+          value: :{{ .Values.port }}
+        - name: DATABASE_TYPE
+          value: sqlite3
+        - name: DATABASE_URL
+          value: /var/lib/matrixbot/go-neb.db?_busy_timeout=5000
+        - name: BASE_URL
+          value: https://{{ .Values.domain }}
+        - name: CONFIG_FILE
+          value: /etc/matrixbot/config.yaml
+        readinessProbe:
+          httpGet:
+            path: /test
+            port: {{ .Values.port }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+        - name: config
+          path: /etc/matrixbot
+        - name: data
+          path: /var/lib/matrixbot
+      volumes:
+      - name: config
+        configMap:
+          name: matrixbot
+      - name: data
+        persistentVolumeClaim:
+          claimName: matrixbot-pv-claim

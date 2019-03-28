@@ -1,0 +1,9 @@
+environment: production
+
+port: 4050
+
+domain: "matrixbot.web3.foundation"
+
+image:
+  repo: matrixdotorg/go-neb
+  tag: latest

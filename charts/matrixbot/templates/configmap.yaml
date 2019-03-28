@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: matrixbot
+data:
+  config.yaml: |
+    clients:
+      - UserID: "@w3fbot:matrix.org"
+        AccessToken: "{{ .Values.accessToken }}"
+        HomeserverURL: "https://matrix.org"
+        Sync: true
+        AutoJoinRooms: true
+        DisplayName: "w3fbot"
+
+    services:
+      - ID: "echoid"
+        Type: "echo"
+        UserID: "@w3fbot:matrix.org"
+        Config: {}
