@@ -17,6 +17,7 @@ spec:
       labels:
         app: matrixbot
     spec:
+      {{ if ne .Values.environment "ci" }}
       initContainers:
       - name: matrixbot-data-permission-fix
         image: busybox
@@ -24,6 +25,7 @@ spec:
         volumeMounts:
         - name: data
           mountPath: /data
+      {{ end }}
       containers:
       - name: matrixbot
         image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
@@ -47,7 +49,7 @@ spec:
             path: /test
             port: {{ .Values.port }}
           initialDelaySeconds: 30
-          timeoutSeconds: 10
+          timeoutSeconds: 30
         resources:
           limits:
             cpu: 100m
@@ -58,12 +60,16 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/matrixbot
+        {{ if ne .Values.environment "ci" }}
         - name: data
           mountPath: /var/lib/matrixbot
+        {{ end }}
       volumes:
       - name: config
         configMap:
           name: matrixbot
+      {{ if ne .Values.environment "ci" }}
       - name: data
         persistentVolumeClaim:
           claimName: matrixbot-pv-claim
+      {{ end }}
