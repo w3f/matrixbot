@@ -39,7 +39,7 @@ spec:
         - name: DATABASE_TYPE
           value: sqlite3
         - name: DATABASE_URL
-          value: /var/lib/matrixbot/go-neb.db?_busy_timeout=5000
+          value: /data/go-neb.db?_busy_timeout=5000
         - name: BASE_URL
           value: https://{{ .Values.domain }}
         - name: CONFIG_FILE
