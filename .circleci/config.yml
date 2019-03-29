@@ -6,6 +6,7 @@ jobs:
       - image: web3f/ci-commons:v0.1.6
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           command: |
             /scripts/build-image.sh web3f/go-neb
@@ -27,6 +28,7 @@ jobs:
       - image: web3f/ci-commons:v0.1.6
     steps:
       - checkout
+      - setup_remote_docker
       - run:
           command: |
             /scripts/publish-image.sh web3f/go-neb
