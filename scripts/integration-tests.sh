@@ -21,6 +21,7 @@ main(){
 
     /scripts/build-helm.sh \
         --set environment=ci \
+        --set image.tag=${CIRCLE_SHA1} \
         matrixbot \
         ./charts/matrixbot
 

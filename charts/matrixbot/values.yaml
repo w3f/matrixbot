@@ -5,7 +5,7 @@ port: 4050
 domain: "matrixbot.web3.foundation"
 
 image:
-  repo: fgimenez/go-neb
+  repo: web3f/go-neb
   tag: latest
 
 accessToken: ""
