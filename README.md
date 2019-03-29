@@ -37,10 +37,15 @@ service resources it contains manifests for these custom resources:
 
     * `GITHUB_BOT_TOKEN`
 
+    * `$DOCKER_USER`
+
+    * `$DOCKER_PASSWORD`
+
   These values are already set on CI, the matrixbot access token is available on
   the `Infrastructure` vault on 1Password in an item called `Matrix.org bot`,
-  the GitHub bot token in a item called `GitHub bot` and the encryption key in
-  the `CI Encryption Key` item.
+  the GitHub bot token in an item called `GitHub bot`, the Docker credentials in
+  an item called `Docker Hub Bot`  and the encryption key in the `CI Encryption Key`
+  item.
 
 * `.circleci`: defines the CI/CD configuration.
 

@@ -1,9 +1,18 @@
 version: 2
 
 jobs:
+  buildImage:
+    docker:
+      - image: web3f/ci-commons:v0.1.6
+    steps:
+      - checkout
+      - run:
+          command: |
+            /scripts/build-image.sh web3f/go-neb
+
   integrationTests:
     docker:
-      - image: web3f/ci-commons:v0.1.5
+      - image: web3f/ci-commons:v0.1.6
     steps:
       - checkout
       - setup_remote_docker:
@@ -13,9 +22,18 @@ jobs:
           command: |
             /scripts/integration-tests.sh
 
+  publishImage:
+    docker:
+      - image: web3f/ci-commons:v0.1.6
+    steps:
+      - checkout
+      - run:
+          command: |
+            /scripts/publish-image.sh web3f/go-neb
+
   publishChart:
     docker:
-      - image: web3f/ci-commons:v0.1.5
+      - image: web3f/ci-commons:v0.1.6
     steps:
       - checkout
       - run:
@@ -26,7 +44,7 @@ jobs:
     environment:
       HELM_ENV: production
     docker:
-      - image: web3f/ci-commons:v0.1.5
+      - image: web3f/ci-commons:v0.1.6
     steps:
       - checkout
       - setup_remote_docker
@@ -38,10 +56,23 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
+      - buildImage:
+          filters:
+            tags:
+              only: /.*/
       - integrationTests:
           filters:
             tags:
               only: /.*/
+      - publishImage:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - buildImage
+            - integrationTests
       - publishChart:
           filters:
             branches:
@@ -49,6 +80,7 @@ workflows:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
           requires:
+            - buildImage
             - integrationTests
       - deploy:
           filters:
@@ -58,3 +90,4 @@ workflows:
               only: /v[0-9]+(\.[0-9]+)*/
           requires:
             - publishChart
+            - publishImage
