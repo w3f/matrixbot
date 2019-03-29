@@ -17,15 +17,6 @@ spec:
       labels:
         app: matrixbot
     spec:
-      {{ if ne .Values.environment "ci" }}
-      initContainers:
-      - name: matrixbot-data-permission-fix
-        image: busybox
-        command: ["/bin/chmod","-R","777", "/data"]
-        volumeMounts:
-        - name: data
-          mountPath: /data
-      {{ end }}
       containers:
       - name: matrixbot
         image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
