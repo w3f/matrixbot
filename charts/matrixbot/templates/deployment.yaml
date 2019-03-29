@@ -62,7 +62,7 @@ spec:
           mountPath: /etc/matrixbot
         {{ if ne .Values.environment "ci" }}
         - name: data
-          mountPath: /var/lib/matrixbot
+          mountPath: /data
         {{ end }}
       volumes:
       - name: config
