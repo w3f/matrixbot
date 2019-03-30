@@ -42,7 +42,7 @@ func (wh *Webhook) Handle(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(400)
 		return
 	}
-	srvID := string(bytesSrvID)
+	srvID := strings.TrimSpace(string(bytesSrvID))
 
 	service, err := wh.db.LoadService(srvID)
 	if err != nil {
