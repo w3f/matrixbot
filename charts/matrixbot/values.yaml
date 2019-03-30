@@ -10,3 +10,4 @@ image:
 
 accessToken: ""
 alertRoomId: "!utBTXcSTXrMrBJpfti:matrix.org"
+alertServiceId: "id"
