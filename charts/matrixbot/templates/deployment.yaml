@@ -51,16 +51,7 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/matrixbot
-        {{ if ne .Values.environment "ci" }}
-        - name: data
-          mountPath: /data
-        {{ end }}
       volumes:
       - name: config
         configMap:
           name: matrixbot
-      {{ if ne .Values.environment "ci" }}
-      - name: data
-        persistentVolumeClaim:
-          claimName: matrixbot-pv-claim
-      {{ end }}
