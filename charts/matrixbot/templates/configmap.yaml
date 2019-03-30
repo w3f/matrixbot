@@ -13,7 +13,7 @@ data:
         DisplayName: "w3fbot"
 
     services:
-      - ID: "{{ .Values.alertServiceID }}"
+      - ID: "{{ .Values.alertServiceId }}"
         Type: "alertmanager"
         UserID: "@w3fbot:matrix.org"
         Config:
