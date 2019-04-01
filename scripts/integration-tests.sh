@@ -21,6 +21,9 @@ main(){
 
     /scripts/build-helm.sh \
         --set environment=ci \
+        --set botUser="${MATRIXBOT_USER}" \
+        --set botPassword="${MATRIXBOT_PASSWORD}" \
+        --set roomId="${MATRIXBOT_ROOM_ID}" \
         --set image.tag=${CIRCLE_SHA1} \
         matrixbot \
         ./charts/matrixbot

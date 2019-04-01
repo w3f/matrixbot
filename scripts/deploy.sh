@@ -1,8 +1,9 @@
 #!/bin/sh
 
 /scripts/deploy.sh helm \
-                   --set accessToken="${MATRIXBOT_ACCESS_TOKEN}" \
+                   --set botUser="${MATRIXBOT_USER}" \
+                   --set botPassword="${MATRIXBOT_PASSWORD}" \
+                   --set roomId="${MATRIXBOT_ROOM_ID}" \
                    --set image.tag="${CIRCLE_TAG}" \
-                   --set alertServiceId="${MATRIXBOT_ALERT_SERVICE_ID}" \
                    matrixbot \
                    w3f/matrixbot
