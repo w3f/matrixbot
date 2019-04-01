@@ -8,6 +8,6 @@ image:
   repo: web3f/matrixbot
   tag: latest
 
-botUser: ""
-botPassword: ""
-roomId: ""
+botUser: "user"
+botPassword: "pass"
+roomId: "room"
