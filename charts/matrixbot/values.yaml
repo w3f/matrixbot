@@ -1,6 +1,6 @@
 environment: production
 
-port: 4050
+port: 8080
 
 domain: "matrixbot.web3.foundation"
 
@@ -8,6 +8,6 @@ image:
   repo: web3f/matrixbot
   tag: latest
 
-accessToken: ""
-alertRoomId: "!utBTXcSTXrMrBJpfti:matrix.org"
-alertServiceId: "id"
+botUser: ""
+botPassword: ""
+roomId: ""

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: matrixbot
 spec:
-  replicas: 1
+  replicas: 2
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -24,20 +24,9 @@ spec:
         ports:
         - name: http
           containerPort: {{ .Values.port }}
-        env:
-        - name: BIND_ADDRESS
-          value: :{{ .Values.port }}
-        - name: DATABASE_TYPE
-          value: sqlite3
-        - name: DATABASE_URL
-          value: /data/go-neb.db?_busy_timeout=5000
-        - name: BASE_URL
-          value: https://{{ .Values.domain }}
-        - name: CONFIG_FILE
-          value: /etc/matrixbot/config.yaml
         readinessProbe:
           httpGet:
-            path: /test
+            path: /stats
             port: {{ .Values.port }}
           initialDelaySeconds: 30
           timeoutSeconds: 30

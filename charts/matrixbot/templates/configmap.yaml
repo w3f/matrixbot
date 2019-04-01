@@ -3,26 +3,12 @@ kind: ConfigMap
 metadata:
   name: matrixbot
 data:
-  config.yaml: |
-    clients:
-      - UserID: "@w3fbot:matrix.org"
-        AccessToken: "{{ .Values.accessToken }}"
-        HomeserverURL: "https://matrix.org"
-        Sync: true
-        AutoJoinRooms: true
-        DisplayName: "w3fbot"
-
-    services:
-      - ID: "{{ .Values.alertServiceId }}"
-        Type: "alertmanager"
-        UserID: "@w3fbot:matrix.org"
-        Config:
-          webhook_url: "/prom_alerts"
-          rooms:
-            "{{ .Values.alertRoomId}}":
-              text_template: "{{ `{{ range .Alerts }}{{if .Annotations.summary }}\nsummary: {{ .Annotations.summary }}{{end}}{{if .Annotations.description}}\ndescription: {{ .Annotations.description }}{{end}}{{if .Annotations.message}}\nmessage: {{ .Annotations.message }}{{end}}{{end}}` }}"
-              msg_type: "m.text"
-      - ID: "echoid"
-        Type: "echo"
-        UserID: "@w3fbot:matrix.org"
-        Config: {}
+  configuration.yaml: |
+    skills:
+    - name: alertmanager
+      path: /app/skills/skill-alertmanager
+    connectors:
+    - name: matrix
+      mxid: "{{ .Values.botUser }}"
+      password: "{{ .Values.botPasssword}}"
+      room: "{{ .Values.roomId }}"
