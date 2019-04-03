@@ -13,5 +13,5 @@ data:
     connectors:
     - name: matrix
       mxid: "{{ .Values.botUser }}"
-      password: "{{ .Values.botPasssword}}"
+      password: "{{ .Values.botPassword}}"
       room: "{{ .Values.roomId }}"
