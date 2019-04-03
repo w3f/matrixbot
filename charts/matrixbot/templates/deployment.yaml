@@ -39,7 +39,7 @@ spec:
             memory: 100Mi
         volumeMounts:
         - name: config
-          mountPath: /etc/matrixbot
+          mountPath: /etc/opsdroid
       volumes:
       - name: config
         configMap:
