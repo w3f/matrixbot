@@ -2,8 +2,6 @@ environment: production
 
 port: 8080
 
-domain: "matrixbot.web3.foundation"
-
 image:
   repo: web3f/matrixbot
   tag: latest
