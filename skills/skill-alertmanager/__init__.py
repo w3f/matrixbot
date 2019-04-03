@@ -6,6 +6,7 @@ from opsdroid.events import Message
 
 import json
 import logging
+import pprint
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -15,11 +16,11 @@ class AlertManager(Skill):
         if type(message) is not Message and type(message) is Request:
             request = await message.post()
 
-            message = Message("",
-                              None,
-                              opsdroid.default_connector,
+            message = Message(None,
                               config.get("room",
-                                         opsdroid.default_connector.default_room))
+                                         opsdroid.default_connector.default_room),
+                              opsdroid.default_connector,
+                              "")
 
             for key in request.keys():
                 _LOGGER.debug('payload received: ' + key)
