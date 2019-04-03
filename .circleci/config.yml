@@ -4,6 +4,9 @@ jobs:
   buildImage:
     docker:
       - image: web3f/ci-commons:v0.1.7
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - setup_remote_docker
@@ -14,6 +17,9 @@ jobs:
   integrationTests:
     docker:
       - image: web3f/ci-commons:v0.1.7
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - setup_remote_docker:
@@ -26,6 +32,9 @@ jobs:
   publishImage:
     docker:
       - image: web3f/ci-commons:v0.1.7
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - setup_remote_docker
@@ -36,6 +45,9 @@ jobs:
   publishChart:
     docker:
       - image: web3f/ci-commons:v0.1.7
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - run:
@@ -47,6 +59,9 @@ jobs:
       HELM_ENV: production
     docker:
       - image: web3f/ci-commons:v0.1.7
+        auth:
+          username: $DOCKER_USER
+          password: $DOCKER_PASSWORD
     steps:
       - checkout
       - setup_remote_docker
