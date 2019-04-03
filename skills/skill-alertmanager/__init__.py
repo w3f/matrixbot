@@ -6,6 +6,7 @@ from opsdroid.events import Message
 
 import json
 import logging
+import pprint
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +14,8 @@ class AlertManager(Skill):
     @match_webhook('webhook')
     async def alertmanager(self, opsdroid, config, message):
         if type(message) is not Message and type(message) is Request:
-            request = await message.post()
+            payload = await message.json()
+            _LOGGER.debug('payload received: ' + pprint.pformat(payload))
 
             message = Message(None,
                               config.get("room",
@@ -21,18 +23,13 @@ class AlertManager(Skill):
                               opsdroid.default_connector,
                               "")
 
-            for key in request.keys():
-                _LOGGER.debug('payload received: ' + key)
+            for alert in payload["alerts"]:
+                await message.respond("Alert *{status}*: {summary} - Severity: `{severity}`".format(
+                    status=alert["status"],
+                    summary=alert["annotations"]["summary"],
+                    severity=alert["labels"]["severity"]))
 
-                payload = json.loads(key)
+                await message.respond("Description: {description}".format(
+                    description=alert["annotations"]["description"]))
 
-                for alert in payload["alerts"]:
-                    await message.respond("Alert *{status}*: {summary} - Severity: `{severity}`".format(
-                        status=alert["status"],
-                        summary=alert["annotations"]["summary"],
-                        severity=alert["labels"]["severity"]))
-
-                    await message.respond("Description: {description}".format(
-                        description=alert["annotations"]["description"]))
-
-                    await message.respond("-------------------------------------------------------------")
+                await message.respond("-------------------------------------------------------------")
