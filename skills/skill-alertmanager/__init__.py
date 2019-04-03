@@ -13,23 +13,25 @@ _LOGGER = logging.getLogger(__name__)
 class AlertManager(Skill):
     @match_webhook('webhook')
     async def alertmanager(self, opsdroid, config, message):
-        if type(message) is not Message and type(message) is Request:
-            payload = await message.json()
-            _LOGGER.debug('payload received: ' + pprint.pformat(payload))
+        if type(message) is Message or type(message) is not Request:
+            return
 
-            message = Message(None,
-                              config.get("room",
-                                         opsdroid.default_connector.default_room),
-                              opsdroid.default_connector,
-                              "")
+        payload = await message.json()
+        _LOGGER.debug('payload received: ' + pprint.pformat(payload))
 
-            for alert in payload["alerts"]:
-                await message.respond("Alert *{status}*: {summary} - Severity: `{severity}`".format(
-                    status=alert["status"],
-                    summary=alert["annotations"]["summary"],
-                    severity=alert["labels"]["severity"]))
+        message = Message(None,
+                          config.get("room",
+                                     opsdroid.default_connector.default_room),
+                          opsdroid.default_connector,
+                          "")
 
-                await message.respond("Description: {description}".format(
-                    description=alert["annotations"]["description"]))
+        for alert in payload["alerts"]:
+            await message.respond("Alert *{status}*: {summary} - Severity: `{severity}`".format(
+                status=alert["status"],
+                summary=alert["annotations"]["summary"],
+                severity=alert["labels"]["severity"]))
 
-                await message.respond("-------------------------------------------------------------")
+            await message.respond("Description: {description}".format(
+                description=alert["annotations"]["description"]))
+
+            await message.respond("-------------------------------------------------------------")
