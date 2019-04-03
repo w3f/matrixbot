@@ -27,16 +27,14 @@ class AlertManager(Skill):
 
                 payload = json.loads(key)
 
-                msg = []
-                msg.append("Alert status: **{status}**".format(status=payload["status"]))
-
                 for alert in payload["alerts"]:
-                    msg.append("  Alert *{status}*: {summary} - `{severity}`".format(
-                        status=alert["status"],
-                        summary=alert["annotations"]["summary"],
-                        severity=alert["labels"]["severity"]))
-                    msg.append("  Description: {description}".format(
-                        description=alert["annotations"]["description"]))
-                    msg.append("---")
+                    await message.respond(
+                        "  Alert *{status}*: {summary} - Severity: `{severity}`".format(
+                            status=alert["status"],
+                            summary=alert["annotations"]["summary"],
+                            severity=alert["labels"]["severity"]))
 
-                await message.respond('\n'.join(msg))
+                    await message.respond("  Description: {description}".format(
+                        description=alert["annotations"]["description"]))
+
+                    await message.respond("-------------------------------------------------------------")
