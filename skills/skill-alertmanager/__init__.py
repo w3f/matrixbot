@@ -6,7 +6,6 @@ from opsdroid.events import Message
 
 import json
 import logging
-import pprint
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,13 +27,12 @@ class AlertManager(Skill):
                 payload = json.loads(key)
 
                 for alert in payload["alerts"]:
-                    await message.respond(
-                        "  Alert *{status}*: {summary} - Severity: `{severity}`".format(
-                            status=alert["status"],
-                            summary=alert["annotations"]["summary"],
-                            severity=alert["labels"]["severity"]))
+                    await message.respond("Alert *{status}*: {summary} - Severity: `{severity}`".format(
+                        status=alert["status"],
+                        summary=alert["annotations"]["summary"],
+                        severity=alert["labels"]["severity"]))
 
-                    await message.respond("  Description: {description}".format(
+                    await message.respond("Description: {description}".format(
                         description=alert["annotations"]["description"]))
 
                     await message.respond("-------------------------------------------------------------")
