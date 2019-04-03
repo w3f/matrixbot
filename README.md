@@ -2,10 +2,9 @@
 
 # Helm chart for matrix.org chatbot
 
-This repo includes the manifests for packaging [go-neb](https://github.com/matrix-org/go-neb)
-as a Helm Chart. It also has defined CI automation for testing and deploying the
-chart on repo changes. The bot itself is configured to just respond to `echo`
-commands, the main usage currently is showing alertmanager notifications.
+This repo includes the manifests for packaging [opsdroid](https://github.com/opsdroid/opsdroid)
+as a Helm Chart and extends it with some skills. It also has defined CI
+automation for testing and deploying the chart on repo changes.
 
 ## Files
 
@@ -22,11 +21,8 @@ service resources it contains manifests for these custom resources:
 
   * `ingress`: sets how matrixbot service is accessed from outside the cluster.
 
-  * `persistentvolumeclaim`: declares a persistent storage for the bot database,
-  so that if the bot container is restarted the state can be recovered.
-
-  * `configmap`: basic configuration of the bot, sets the access token and
-  enables the `alermanager` and `echo` services.
+  * `configmap`: basic configuration of the bot, including the matrix connector
+  settings and the skills configuration.
 
   In order to be able to deploy to production, these environment variables must be
   available:
@@ -58,6 +54,9 @@ service resources it contains manifests for these custom resources:
 
   * `deploy.sh`: commands to release the application to the production cluster
   using the published chart.
+
+* `skills`: additional opsdroid functionality, currently the ability to receive
+alertmanager notifications on a webhook and show them on a matrix room.
 
 ## Workflow
 
