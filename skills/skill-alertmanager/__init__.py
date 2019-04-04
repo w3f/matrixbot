@@ -26,12 +26,10 @@ class AlertManager(Skill):
                           "")
 
         for alert in payload["alerts"]:
-            await message.respond("Alert *{status}*: {name} - Severity: `{severity}`".format(
-                status=alert["status"],
+            await message.respond("{status}: {name} ({severity})".format(
+                status=alert["status"].upper(),
                 name=alert["labels"]["alertname"],
-                severity=alert["labels"]["severity"]))
+                severity=alert["labels"]["severity"].uppper()))
 
-            await message.respond("Description: {description}".format(
+            await message.respond("{description}".format(
                 description=alert["annotations"]["message"]))
-
-            await message.respond("-------------------------------------------------------------")
