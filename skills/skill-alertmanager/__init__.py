@@ -29,7 +29,7 @@ class AlertManager(Skill):
             await message.respond("{status}: {name} ({severity})".format(
                 status=alert["status"].upper(),
                 name=alert["labels"]["alertname"],
-                severity=alert["labels"]["severity"].uppper()))
+                severity=alert["labels"]["severity"].upper()))
 
             await message.respond("{description}".format(
                 description=alert["annotations"]["message"]))
