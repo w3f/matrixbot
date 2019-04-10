@@ -26,8 +26,13 @@ class AlertManager(Skill):
                           "")
 
         for alert in payload["alerts"]:
+            msg = ""
+            if "message" in alert["annotations"]:
+                msg = alert["annotations"]["message"]
+            elif "descrciption" in alert["annotations"]:
+                msg = alert["annotations"]["description"]
             await message.respond("{status} {name} ({severity}): {message}".format(
                 status=alert["status"].upper(),
                 name=alert["labels"]["alertname"],
                 severity=alert["labels"]["severity"].upper(),
-                message=alert["annotations"]["message"]))
+                message=msg))
