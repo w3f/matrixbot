@@ -29,7 +29,7 @@ class AlertManager(Skill):
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
-            elif "descrciption" in alert["annotations"]:
+            elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
             await message.respond("{status} {name} ({severity}): {message}".format(
                 status=alert["status"].upper(),
