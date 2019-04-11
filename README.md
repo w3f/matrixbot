@@ -42,7 +42,7 @@ service resources it contains manifests for these custom resources:
   These values are already set on CI, the matrixbot values are available on the
   `Infrastructure` vault on 1Password in an item called `Matrix.org bot`, the
   GitHub bot token in an item called `GitHub bot`, the Docker credentials in an
-  item called `Docker Hub Bot`  and the Digital Ocen access token in the
+  item called `Docker Hub Bot`  and the Digital Ocean access token in the
   `DigitalOcean API credentials` item.
 
 * `.circleci`: defines the CI/CD configuration.
