@@ -33,7 +33,7 @@ service resources it contains manifests for these custom resources:
 
     * `$MATRIXBOT_ALERT_SERVICE_ID`
 
-    * `GITHUB_BOT_TOKEN`
+    * `$GITHUB_BOT_TOKEN`
 
     * `$DOCKER_USER`
 
