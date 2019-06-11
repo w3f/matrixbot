@@ -1,12 +1,19 @@
+deploy: &deploy
+    docker:
+      - image: web3f/ci-commons:v1.0.0
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          command: |
+            ./scripts/deploy.sh ${ENVIRONMENT}
+
 version: 2
 
 jobs:
   buildImage:
     docker:
-      - image: web3f/ci-commons:v0.1.7
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+      - image: web3f/ci-commons:v1.0.0
     steps:
       - checkout
       - setup_remote_docker
@@ -16,10 +23,7 @@ jobs:
 
   integrationTests:
     docker:
-      - image: web3f/ci-commons:v0.1.7
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+      - image: web3f/ci-commons:v1.0.0
     steps:
       - checkout
       - setup_remote_docker:
@@ -31,10 +35,7 @@ jobs:
 
   publishImage:
     docker:
-      - image: web3f/ci-commons:v0.1.7
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+      - image: web3f/ci-commons:v1.0.0
     steps:
       - checkout
       - setup_remote_docker
@@ -44,28 +45,28 @@ jobs:
 
   publishChart:
     docker:
-      - image: web3f/ci-commons:v0.1.7
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
+      - image: web3f/ci-commons:v1.0.0
     steps:
       - checkout
       - run:
           command: |
             /scripts/publish-chart.sh
 
-  deploy:
-    docker:
-      - image: web3f/ci-commons:v0.1.7
-        auth:
-          username: $DOCKER_USER
-          password: $DOCKER_PASSWORD
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          command: |
-            ./scripts/deploy.sh
+  deployW3F:
+    environment:
+      MATRIXBOT_USER: $W3F_MATRIXBOT_USER
+      MATRIXBOT_PASSWORD: $W3F_MATRIXBOT_PASSWORD
+      MATRIXBOT_ROOM_ID: $W3F_MATRIXBOT_ROOM_ID
+      ENVIRONMENT: w3f
+    <<: *deploy
+
+  deployComm:
+    environment:
+      MATRIXBOT_USER: $COMM_MATRIXBOT_USER
+      MATRIXBOT_PASSWORD: $COMM_MATRIXBOT_PASSWORD
+      MATRIXBOT_ROOM_ID: $COMM_MATRIXBOT_ROOM_ID
+      ENVIRONMENT: community
+    <<: *deploy
 
 workflows:
   version: 2
@@ -97,7 +98,16 @@ workflows:
           requires:
             - buildImage
             - integrationTests
-      - deploy:
+      - deployW3F:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - publishChart
+            - publishImage
+      - deployComm:
           filters:
             branches:
               ignore: /.*/
