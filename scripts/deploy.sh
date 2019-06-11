@@ -2,7 +2,7 @@
 
 ENVIRONMENT=$1
 
-/scripts/deploy.sh -c ${ENVIRONMENT} helm \
+/scripts/deploy.sh -c ${ENVIRONMENT} -t helm \
                    --set botUser="${MATRIXBOT_USER}" \
                    --set botPassword="${MATRIXBOT_PASSWORD}" \
                    --set roomId="${MATRIXBOT_ROOM_ID}" \
