@@ -15,4 +15,4 @@ data:
       mxid: "{{ .Values.botUser }}"
       password: "{{ .Values.botPassword}}"
       room: "{{ .Values.roomId }}"
-      homeserver: "https://matrix.web3.foundation"
+      homeserver: "{{ .Values.homeserver }}"
