@@ -54,17 +54,11 @@ jobs:
 
   deployW3F:
     environment:
-      MATRIXBOT_USER: $W3F_MATRIXBOT_USER
-      MATRIXBOT_PASSWORD: $W3F_MATRIXBOT_PASSWORD
-      MATRIXBOT_ROOM_ID: $W3F_MATRIXBOT_ROOM_ID
       ENVIRONMENT: w3f
     <<: *deploy
 
   deployComm:
     environment:
-      MATRIXBOT_USER: $COMM_MATRIXBOT_USER
-      MATRIXBOT_PASSWORD: $COMM_MATRIXBOT_PASSWORD
-      MATRIXBOT_ROOM_ID: $COMM_MATRIXBOT_ROOM_ID
       ENVIRONMENT: community
     <<: *deploy
 
