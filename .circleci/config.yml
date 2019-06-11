@@ -6,7 +6,7 @@ deploy: &deploy
       - setup_remote_docker
       - run:
           command: |
-            ./scripts/deploy.sh ${ENVIRONMENT}
+            ./scripts/deploy.sh
 
 version: 2
 
