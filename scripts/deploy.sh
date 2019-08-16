@@ -8,9 +8,9 @@ if [ "${ENVIRONMENT}" = "w3f" ]; then
 else
     MATRIXBOT_USER="${COMM_MATRIXBOT_USER}"
     MATRIXBOT_PASSWORD="${COMM_MATRIXBOT_PASSWORD}"
-    if [ "${APP}" = "eth" ]; then
-        MATRIXBOT_ROOM_ID="${ETH_MATRIXBOT_ROOM_ID}"
-        RELEASE_NAME="matrixbot-ethereum-tracker"
+    if [ "${APP}" = "ethereum-tracker" ]; then
+        MATRIXBOT_ROOM_ID="${ETH_TRACKER_MATRIXBOT_ROOM_ID}"
+        RELEASE_NAME="matrixbot-${APP}"
     else
         MATRIXBOT_ROOM_ID="${COMM_MATRIXBOT_ROOM_ID}"
     fi
