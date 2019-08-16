@@ -62,6 +62,12 @@ jobs:
       ENVIRONMENT: community
     <<: *deploy
 
+  deployEthTracker:
+    environment:
+      ENVIRONMENT: community
+      APP: ethereum-tracker
+    <<: *deploy
+
 workflows:
   version: 2
   test_and_deploy:
@@ -102,6 +108,15 @@ workflows:
             - publishChart
             - publishImage
       - deployComm:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+          requires:
+            - publishChart
+            - publishImage
+      - deployEthTracker:
           filters:
             branches:
               ignore: /.*/
