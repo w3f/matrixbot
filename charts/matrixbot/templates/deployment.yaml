@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: matrixbot
+  name: {{ .Release.Name }}
   labels:
-    app: matrixbot
+    app: {{ .Release.Name }}
 spec:
   replicas: 2
   revisionHistoryLimit: 3
@@ -11,16 +11,16 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app: matrixbot
+      app: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: matrixbot
+        app: {{ .Release.Name }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
-      - name: matrixbot
+      - name: {{ .Release.Name }}
         image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
         imagePullPolicy: IfNotPresent
         ports:
@@ -45,4 +45,4 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: matrixbot
+          name: {{ .Release.Name }}

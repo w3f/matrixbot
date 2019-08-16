@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: matrixbot
+  name: {{ .Release.Name }}
 data:
   configuration.yaml: |
     web:
