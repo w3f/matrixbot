@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}
   labels:
-    app: matrixbot
+    app: {{ .Release.Name }}
 spec:
   ports:
   - name: http
     port: {{ .Values.port }}
   selector:
-    app: matrixbot
+    app: {{ .Release.Name }}

@@ -8,8 +8,7 @@ data:
       host: '0.0.0.0'
       port: {{ .Values.port }}
     skills:
-    - name: alertmanager
-      path: /app/skills/skill-alertmanager
+{{ toYaml .Values.skills | indent 6 }}
     connectors:
     - name: matrix
       mxid: "{{ .Values.botUser }}"

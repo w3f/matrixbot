@@ -11,3 +11,7 @@ botPassword: "pass"
 roomId: "room"
 
 homeserver: "https://matrix.web3.foundation"
+
+skills:
+- name: alertmanager
+  path: /app/skills/skill-alertmanager
