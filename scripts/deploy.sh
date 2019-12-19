@@ -16,10 +16,4 @@ else
     fi
 fi
 
-/scripts/deploy.sh -c ${ENVIRONMENT} -t helm -- \
-                   --set botUser="${MATRIXBOT_USER}" \
-                   --set botPassword="${MATRIXBOT_PASSWORD}" \
-                   --set roomId="${MATRIXBOT_ROOM_ID}" \
-                   --set image.tag="${CIRCLE_TAG}" \
-                   "${RELEASE_NAME}" \
-                   w3f/matrixbot
+/scripts/deploy.sh -c ${ENVIRONMENT} -t helm -a "--set botUser=${MATRIXBOT_USER} --set botPassword=${MATRIXBOT_PASSWORD} --set roomId=${MATRIXBOT_ROOM_ID} --set image.tag=${CIRCLE_TAG} ${RELEASE_NAME} w3f/matrixbot"
