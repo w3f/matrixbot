@@ -11,14 +11,14 @@ import pprint
 _LOGGER = logging.getLogger(__name__)
 
 
-class AlertManager(Skill):
+class InfoManager(Skill):
     @match_webhook('webhook')
-    async def alertmanager(self, opsdroid, config, message):
+    async def infomanager(self, opsdroid, config, message):
         if type(message) is Message or type(message) is not Request:
             return
 
         payload = await message.json()
-        _LOGGER.debug('payload received by alertmanager: ' +
+        _LOGGER.debug('payload received by infomanager: ' +
                       pprint.pformat(payload))
 
         message = Message(None,
@@ -28,15 +28,15 @@ class AlertManager(Skill):
                           "")
 
         for alert in payload["alerts"]:
+            if alert["status"].upper() == "RESOLVED":
+                next
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
-            await message.respond(
-                "{status} {name} ({severity}): {message}".format(
-                    status=alert["status"].upper(),
-                    name=alert["labels"]["alertname"],
-                    severity=alert["labels"]["severity"].upper(),
-                    message=msg)
+            await message.respond("{severity} {name}: {message}".format(
+                name=alert["labels"]["alertname"],
+                severity=alert["labels"]["severity"].upper(),
+                message=msg)
             )
