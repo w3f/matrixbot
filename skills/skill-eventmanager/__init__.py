@@ -11,14 +11,14 @@ import pprint
 _LOGGER = logging.getLogger(__name__)
 
 
-class InfoManager(Skill):
+class EventManager(Skill):
     @match_webhook('webhook')
-    async def infomanager(self, opsdroid, config, message):
+    async def eventmanager(self, opsdroid, config, message):
         if type(message) is Message or type(message) is not Request:
             return
 
         payload = await message.json()
-        _LOGGER.debug('payload received by infomanager: ' +
+        _LOGGER.debug('payload received by eventmanager: ' +
                       pprint.pformat(payload))
 
         message = Message(None,
