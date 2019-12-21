@@ -8,8 +8,8 @@ import json
 import logging
 import pprint
 
-LOGLEVEL = os.environ.get('LOGLEVEL', 'INFO').upper()
-logging.basicConfig(level=LOGLEVEL)
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
+logging.basicConfig(level=LOG_LEVEL)
 _LOGGER = logging.getLogger(__name__)
 
 

@@ -23,6 +23,9 @@ spec:
       - name: {{ .Release.Name }}
         image: {{ .Values.image.repo }}:{{ .Values.image.tag }}
         imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_LEVEL
+          value: info
         ports:
         - name: http
           containerPort: {{ .Values.port }}
