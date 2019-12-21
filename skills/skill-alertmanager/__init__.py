@@ -6,6 +6,7 @@ from opsdroid.events import Message
 
 import json
 import logging
+import os
 import pprint
 
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
