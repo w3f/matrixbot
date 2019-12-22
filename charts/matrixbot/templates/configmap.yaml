@@ -10,8 +10,8 @@ data:
     skills:
 {{ toYaml .Values.skills | indent 6 }}
     connectors:
-    - name: matrix
-      mxid: "{{ .Values.botUser }}"
-      password: "{{ .Values.botPassword}}"
-      room: "{{ .Values.roomId }}"
-      homeserver: "{{ .Values.homeserver }}"
+      matrix:
+        mxid: "{{ .Values.botUser }}"
+        password: "{{ .Values.botPassword}}"
+        room: "{{ .Values.roomId }}"
+        homeserver: "{{ .Values.homeserver }}"
