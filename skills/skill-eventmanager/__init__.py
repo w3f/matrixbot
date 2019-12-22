@@ -6,11 +6,8 @@ from opsdroid.events import Message
 
 import json
 import logging
-import os
 import pprint
 
-LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO').upper()
-logging.basicConfig(level=LOG_LEVEL)
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -32,7 +29,7 @@ class EventManager(Skill):
 
         for alert in payload["alerts"]:
             if alert["status"].upper() == "RESOLVED":
-                next
+                continue
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
