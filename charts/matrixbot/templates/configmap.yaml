@@ -11,7 +11,8 @@ data:
 {{ toYaml .Values.skills | indent 6 }}
     connectors:
       matrix:
-        mxid: "{{ .Values.botUser }}"
-        password: "{{ .Values.botPassword}}"
-        room: "{{ .Values.roomId }}"
-        homeserver: "{{ .Values.homeserver }}"
+        mxid: {{ .Values.botUser | quote }}
+        password: {{ .Values.botPassword | quote }}
+        rooms:
+          "main": {{ .Values.roomId | quote }}
+        homeserver: {{ .Values.homeserver }}
