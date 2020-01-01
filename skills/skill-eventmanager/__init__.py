@@ -4,7 +4,6 @@ from opsdroid.skill import Skill
 from opsdroid.matchers import match_webhook
 from opsdroid.events import Message
 
-import json
 import logging
 import pprint
 
@@ -13,19 +12,10 @@ _LOGGER = logging.getLogger(__name__)
 
 class EventManager(Skill):
     @match_webhook('webhook')
-    async def eventmanager(self, opsdroid, config, message):
-        if type(message) is Message or type(message) is not Request:
-            return
-
-        payload = await message.json()
+    async def eventmanager(self, event: Request):
+        payload = await event.json()
         _LOGGER.debug('payload received by eventmanager: ' +
                       pprint.pformat(payload))
-
-        message = Message(None,
-                          config.get("room",
-                                     opsdroid.default_connector.default_room),
-                          opsdroid.default_connector,
-                          "")
 
         for alert in payload["alerts"]:
             if alert["status"].upper() == "RESOLVED":
@@ -35,8 +25,10 @@ class EventManager(Skill):
                 msg = alert["annotations"]["message"]
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
-            await message.respond("{severity} {name}: {message}".format(
-                name=alert["labels"]["alertname"],
-                severity=alert["labels"]["severity"].upper(),
-                message=msg)
+            await self.opsdroid.send(Message(str(
+                "{severity} {name}: {message}".format(
+                    name=alert["labels"]["alertname"],
+                    severity=alert["labels"]["severity"].upper(),
+                    message=msg)
+                ))
             )
