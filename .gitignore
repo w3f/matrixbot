@@ -2,3 +2,4 @@ vendor/src
 pkg/
 bin/
 configuration.yaml
+env/
