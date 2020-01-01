@@ -29,7 +29,7 @@ class EventManager(Skill):
 
         for alert in payload["alerts"]:
             if alert["status"].upper() == "RESOLVED":
-                next
+                continue
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
