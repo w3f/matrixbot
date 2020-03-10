@@ -7,9 +7,7 @@ deploy: &deploy
       - run:
           command: |
             ./scripts/deploy.sh
-
 version: 2
-
 jobs:
   buildImage:
     docker:
@@ -20,7 +18,14 @@ jobs:
       - run:
           command: |
             /scripts/build-image.sh web3f/matrixbot .
-
+  helmLint:
+    docker:
+      - image: web3f/ci-commons:v2.0.1
+    steps:
+      - checkout
+      - run:
+          command: |
+            helm lint ./charts/matrixbot
   integrationTests:
     docker:
       - image: web3f/ci-commons:v2.0.1
@@ -32,7 +37,6 @@ jobs:
           description: run integration tests
           command: |
             /scripts/integration-tests.sh
-
   publishImage:
     docker:
       - image: web3f/ci-commons:v2.0.1
@@ -42,7 +46,6 @@ jobs:
       - run:
           command: |
             /scripts/publish-image.sh web3f/matrixbot
-
   publishChart:
     docker:
       - image: web3f/ci-commons:v2.0.1
@@ -72,10 +75,16 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
+      - helmLint:
+          filters:
+            tags:
+              only: /.*/
       - buildImage:
           filters:
             tags:
               only: /.*/
+          requires:
+            - helmLint              
       - integrationTests:
           filters:
             tags:
