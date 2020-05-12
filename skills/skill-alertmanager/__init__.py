@@ -18,17 +18,18 @@ class AlertManager(Skill):
                       pprint.pformat(payload))
 
         for alert in payload["alerts"]:
-            template = "New alert: {} in {}"
+            if alert["status"].upper() == "RESOLVED":
+                continue
+            msg = ""
             if "message" in alert["annotations"]:
-                msg = template.format(alert["annotations"]["message"], alert["labels"]["origin"])
+                msg = alert["annotations"]["message"]
             elif "description" in alert["annotations"]:
-                msg = template.format(alert["annotations"]["description"], alert["labels"]["origin"])
+                msg = alert["annotations"]["description"]
             await self.opsdroid.send(Message(str(
-                "{status} {name} ({severity}): {message}".format(
-                    status=alert["status"].upper(),
+                "{severity} {name}: {message}".format(
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
                     origin=alert["labels"]["origin"].upper(),
-                    message="NEW ALERT!")
+                    message=msg)
                 ))
             )

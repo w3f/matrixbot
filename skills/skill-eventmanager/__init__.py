@@ -20,16 +20,16 @@ class EventManager(Skill):
         for alert in payload["alerts"]:
             if alert["status"].upper() == "RESOLVED":
                 continue
-            template = "New alert: {} in {}"
+            msg = ""
             if "message" in alert["annotations"]:
-                msg = template.format(alert["annotations"]["message"], alert["labels"]["origin"])
+                msg = alert["annotations"]["message"]
             elif "description" in alert["annotations"]:
-                msg = template.format(alert["annotations"]["description"], alert["labels"]["origin"])
+                msg = alert["annotations"]["description"]
             await self.opsdroid.send(Message(str(
                 "{severity} {name}: {message}".format(
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
                     origin=alert["labels"]["origin"].upper(),
-                    message="NEW ALERT!")
+                    message=msg)
                 ))
             )
