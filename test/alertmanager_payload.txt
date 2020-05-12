@@ -6,7 +6,8 @@
       "status": "firing",
       "labels": {
         "alertname": "Test",
-        "severity": "criticalll"
+        "severity": "criticalll",
+        "origin": "testing"
       },
       "annotations": {
         "description": "some description"
