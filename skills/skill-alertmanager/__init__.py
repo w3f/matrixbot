@@ -29,6 +29,6 @@ class AlertManager(Skill):
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
                     origin=alert["labels"]["origin"].upper(),
-                    message="NEW ALERT!")
+                    message=msg)
                 ))
             )
