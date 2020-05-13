@@ -18,15 +18,14 @@ class AlertManager(Skill):
                       pprint.pformat(payload))
 
         for alert in payload["alerts"]:
-            if alert["status"].upper() == "RESOLVED":
-                continue
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
             await self.opsdroid.send(Message(str(
-                "{severity} {name}: {message}".format(
+                "{status} {name} ({severity}): {message}".format(
+                    status=alert["status"].upper(),
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
                     origin=alert["labels"]["origin"].upper(),

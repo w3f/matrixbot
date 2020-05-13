@@ -10,6 +10,7 @@ import pprint
 _LOGGER = logging.getLogger(__name__)
 
 
+
 class EventManager(Skill):
     @match_webhook('webhook')
     async def eventmanager(self, event: Request):
