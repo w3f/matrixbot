@@ -24,10 +24,11 @@ class AlertManager(Skill):
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
             await self.opsdroid.send(Message(str(
-                "{status} {name} ({severity}): {message}".format(
+                "{status} {name} ({severity}): {message} in: {origin}".format(
                     status=alert["status"].upper(),
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
+                    origin=alert["labels"]["origin"].upper(),
                     message=msg)
                 ))
             )
