@@ -27,10 +27,9 @@ class EventManager(Skill):
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
             await self.opsdroid.send(Message(str(
-                "{severity} {name}: {message} in: {origin}".format(
+                "{severity} {name}: {message}".format(
                     name=alert["labels"]["alertname"],
                     severity=alert["labels"]["severity"].upper(),
-                    origin=alert["labels"]["origin"].upper(),
                     message=msg)
                 ))
             )
