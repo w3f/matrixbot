@@ -1,0 +1,16 @@
+environment: {{ .Environment.Name }}
+
+image:
+  repo: localhost:5000/matrixbot
+  tag: v0.2.0
+
+botUser: "@xxx:web3.foundation"
+botPassword: "xxx"
+roomId: "xxx:web3.foundation"
+
+skills:
+- name: eventmanager
+  path: /app/skills/skill-eventmanager
+- name: eventmanager-ack
+  path: /app/skills/skill-eventmanager-ack  
+

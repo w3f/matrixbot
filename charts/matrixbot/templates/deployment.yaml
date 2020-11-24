@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
-  replicas: 2
+  replicas: 1
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -41,8 +41,19 @@ spec:
             memory: 100Mi
         volumeMounts:
         - name: config
-          mountPath: /etc/opsdroid
+          mountPath: /etc/opsdroid  
+        - name: db
+          mountPath: /app/db
       volumes:
       - name: config
         configMap:
-          name: {{ .Release.Name }}
+          name: {{ .Release.Name }}        
+      - name: db
+        {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}
+        {{ else }}
+        emptyDir: {}  
+        {{ end }}  
+      
+      
