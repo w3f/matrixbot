@@ -80,6 +80,7 @@ workflows:
             tags:
               only: /.*/
       - buildImage:
+          context: dockerhub-bot
           filters:
             tags:
               only: /.*/
@@ -90,6 +91,7 @@ workflows:
             tags:
               only: /.*/
       - publishImage:
+          context: dockerhub-bot
           filters:
             branches:
               ignore: /.*/
@@ -99,6 +101,7 @@ workflows:
             - buildImage
             - integrationTests
       - publishChart:
+          context: github-bot
           filters:
             branches:
               ignore: /.*/
@@ -107,30 +110,30 @@ workflows:
           requires:
             - buildImage
             - integrationTests
-      - deployW3F:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
-      - deployComm:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
-      - deployEthTracker:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
+      # - deployW3F:
+      #     filters:
+      #       branches:
+      #         ignore: /.*/
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*/
+      #     requires:
+      #       - publishChart
+      #       - publishImage
+      # - deployComm:
+      #     filters:
+      #       branches:
+      #         ignore: /.*/
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*/
+      #     requires:
+      #       - publishChart
+      #       - publishImage
+      # - deployEthTracker:
+      #     filters:
+      #       branches:
+      #         ignore: /.*/
+      #       tags:
+      #         only: /v[0-9]+(\.[0-9]+)*/
+      #     requires:
+      #       - publishChart
+      #       - publishImage
