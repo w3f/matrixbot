@@ -12,6 +12,15 @@ roomId: "room"
 
 homeserver: "https://matrix.web3.foundation"
 
+replicas: 2
+resources:
+  limits:
+    cpu: 100m
+    memory: 100Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
 skills:
   alertmanager:
     path: /app/skills/skill-alertmanager
