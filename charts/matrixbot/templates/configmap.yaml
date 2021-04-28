@@ -20,4 +20,7 @@ data:
         rooms:
           "main": {{ .Values.roomId | quote }}
         homeserver: {{ .Values.homeserver }}
+        enable_encryption: True
         store_path: "/app/store/"
+        device_name: "bot"
+        device_id: "bot"

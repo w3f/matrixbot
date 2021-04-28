@@ -34,11 +34,12 @@ class MySkill(Skill):
             await self.store_ack(toBeStored)
             await self.opsdroid.send(Message(self.build_event_message(toBeStored)))    
 
-    @match_crontab('5 * * * *', timezone="Europe/Rome")
+    #TOCHANGE very one minute for testing pourposes
+    @match_crontab('*/1 * * * *', timezone="Europe/Rome")
     async def crontab_show_pending(self, event):
         pending = await self.get_pending_acks()
         if pending:
-          await self.opsdroid.send(Message(text="ACK SERVICE:: Some confirmations still require your attention:"))
+          await self.opsdroid.send(Message(text="ACK SERVICE: Some confirmations still require your attention:"))
           for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))  
 
@@ -50,7 +51,10 @@ class MySkill(Skill):
 
     @match_parse('ACK:pending')
     async def pending_acks(self, message):
+        _LOGGER.info(f"SKILL: ACK pending called")
+        
         pending = await self.get_pending_acks()
+        await self.log_acks(pending)
         await message.respond("ACK SERVICE: Pending Acks:")
         for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))      
@@ -58,6 +62,8 @@ class MySkill(Skill):
     @match_parse('ACK:confirm {uuid}')
     async def delete(self, message):
         uuid = message.entities['uuid']['value']
+        _LOGGER.info(f"SKILL: ACK confirm called with uuid {uuid}")
+
         isFound = await self.delete_by_uuid(uuid)
         if isFound == True:
             await message.respond("ACK SERVICE: Confirmation Success: {}".format(uuid))     
@@ -65,9 +71,9 @@ class MySkill(Skill):
             await message.respond("ACK SERVICE: No id match found for this id: {}".format(uuid))        
 
     async def get_pending_acks(self):
-        await self.init_db()
         pending_acks = await self.opsdroid.memory.get("pending_ack")
-        await self.print_db_state()
+        if pending_acks is None:
+          pending_acks = []
         return pending_acks  
 
     async def store_ack(self,toBeStored):
@@ -75,23 +81,21 @@ class MySkill(Skill):
         acks.append(toBeStored)
         await self.opsdroid.memory.put("pending_ack", acks)
         _LOGGER.info(f"DB: Stored {toBeStored}")
-        await self.print_db_state()
+        await self.log_db_state()
 
-    async def init_db(self):
-        pending_acks = await self.opsdroid.memory.get("pending_ack")
-        if pending_acks is None:   
-            pending_ack = []
-            await self.opsdroid.memory.put("pending_ack", pending_ack)
-            _LOGGER.info(f"DB: Initialized")
-
-    async def print_db_state(self):
-        pending_acks = await self.opsdroid.memory.get("pending_ack")
+    async def log_db_state(self):
+        pending_acks = await self.get_pending_acks()
         _LOGGER.info(f"DB: current state, pending acks:")
         for ack in pending_acks:
             _LOGGER.info(f"{ack}")    
 
+    async def log_acks(self,acks):
+        _LOGGER.info(f"SKILL: acks:")
+        for ack in acks:
+            _LOGGER.info(f"{ack}")         
+
     async def delete_by_uuid(self,uuid):
-        pending_acks = await self.opsdroid.memory.get("pending_ack")
+        pending_acks = await self.get_pending_acks()
         isFound = False
         for ack in pending_acks:
             if ack["uuid"] == uuid:
@@ -99,6 +103,7 @@ class MySkill(Skill):
                 await self.opsdroid.memory.put("pending_ack", pending_acks)
                 isFound = True
                 _LOGGER.info(f"DB: Deleted {ack}") 
+                await self.log_db_state()
         return isFound   
 
     def build_event_message(self,ack):

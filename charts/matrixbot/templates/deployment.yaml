@@ -44,6 +44,8 @@ spec:
           mountPath: /etc/opsdroid  
         - name: db
           mountPath: /app/db
+        - name: store
+          mountPath: /app/store  
       volumes:
       - name: config
         configMap:
@@ -51,7 +53,14 @@ spec:
       - name: db
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
         persistentVolumeClaim:
-          claimName: {{ .Release.Name }}
+          claimName: {{ .Release.Name }}-db
+        {{ else }}
+        emptyDir: {}  
+        {{ end }}  
+      - name: store
+        {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-store
         {{ else }}
         emptyDir: {}  
         {{ end }}  
