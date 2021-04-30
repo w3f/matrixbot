@@ -46,19 +46,28 @@ class EventManagerAck(Skill):
           await self.opsdroid.send(Message(text="NOTE: Some confirmations still require your attention:"))
           for p in pending:
               if p["reminder_counter"] == ESCALATION_LIMIT
+                _LOGGER.info(f"ESCALATION: {p}")
                 await self.opsdroid.send(Message(self.build_escalation_message(p)))
               else
                 await self.opsdroid.send(Message(self.build_event_message(p)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
-        _LOGGER.info(f"SKILL: ACK pending called")
+        _LOGGER.info(f"SKILL: '!pending' called")
         
         pending = await self.get_pending_alerts()
-        await self.log_alert(pending)
         await message.respond("Pending alerts:")
         for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))      
+
+    @match_parse('!escalated')
+    async def escalations(self, message):
+        _LOGGER.info(f"SKILL: '!escalated' called")
+
+        escalated = await self.get_escalations()
+        await message.respond("Pending alerts:")
+        for p in pending:
+              await self.opsdroid.send(Message(self.build_event_message(p)))
 
     # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
@@ -82,23 +91,41 @@ class EventManagerAck(Skill):
           pending = []
         return pending
 
-    async def store_alert(self, toBeStored):
-        pending = await self.get_pending_alerts()
-        pending.append(toBeStored)
-        await self.opsdroid.memory.put("pending_alerts", pending)
-        _LOGGER.info(f"DB: Stored {toBeStored}")
-        await self.log_db_state()
+    async def get_escalations(self):
+        pending = await self.opsdroid.memory.get("pending_alerts")
+        if pending is None:
+          pending = []
+        return pending
 
-    async def log_db_state(self):
+    async def store_alert(self, alert):
         pending = await self.get_pending_alerts()
-        _LOGGER.info(f"DB: current state, pending acks:")
+        pending.append(alert)
+        await self.opsdroid.memory.put("pending_alerts", pending)
+        _LOGGER.info(f"DB: stored alert: {alert}")
+        await self.log_pending_alert_state()
+
+    async def store_escalation(self, alert):
+        # Remove alert from pending list
+        uuid = alert["uuid"]
+        await self.delete_by_uuid(uuid)
+
+        # Add alert to escalation list
+        escalations = await self.get_escalations()
+        escalations.append(alert)
+        await self.opsdroid.memory.put("escalated_alerts", escalations)
+        _LOGGER.info(f"DB: stored escalation: {alert}")
+
+    async def log_pending_alert_state(self):
+        pending = await self.get_pending_alerts()
+        _LOGGER.info(f"DB: current pending alert state:")
         for ack in pending:
             _LOGGER.info(f"{ack}")    
 
-    async def log_alert(self, alerts):
-        _LOGGER.info(f"SKILL: alerts:")
-        for alert in alerts:
-            _LOGGER.info(f"{alert}")
+    async def log_escalation_state(self):
+        escalations = await self.get_escalations()
+        _LOGGER.info(f"DB: current escalation state:")
+        for e in escalations:
+            _LOGGER.info(f"{e}")
 
     async def delete_by_uuid(self, uuid):
         pending = await self.get_pending_alerts()
@@ -109,7 +136,7 @@ class EventManagerAck(Skill):
                 await self.opsdroid.memory.put("pending_alerts", pending_alerts)
                 isFound = True
                 _LOGGER.info(f"DB: Deleted {p}")
-                await self.log_db_state()
+                await self.log_pending_alert_state()
         return isFound   
 
     def build_event_message(self, ack):
