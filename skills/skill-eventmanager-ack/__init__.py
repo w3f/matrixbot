@@ -77,9 +77,9 @@ class MySkill(Skill):
         return pending
 
     async def store_alert(self,toBeStored):
-        acks = await self.get_pending_alerts()
-        acks.append(toBeStored)
-        await self.opsdroid.memory.put("pending_alerts", acks)
+        pending = await self.get_pending_alerts()
+        pending.append(toBeStored)
+        await self.opsdroid.memory.put("pending_alerts", pending)
         _LOGGER.info(f"DB: Stored {toBeStored}")
         await self.log_db_state()
 
