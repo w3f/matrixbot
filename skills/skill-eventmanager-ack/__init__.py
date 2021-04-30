@@ -27,11 +27,11 @@ class EventManagerAck(Skill):
                 msg = alert["annotations"]["description"]
 
             alert_context = {
-              "uuid": uuid_pkg.uuid4().hex,
-              "severity": alert["labels"]["severity"].upper(),
-              "name": alert["labels"]["alertname"],
-              "message": msg,
-              "reminder_counter": 0,
+                "uuid": uuid_pkg.uuid4().hex,
+                "severity": alert["labels"]["severity"].upper(),
+                "name": alert["labels"]["alertname"],
+                "message": msg,
+                "reminder_counter": 0,
             }
 
             await self.store_alert(alert_context)
@@ -43,14 +43,15 @@ class EventManagerAck(Skill):
         """Notify users about the pending alerts."""
         pending = await self.get_pending_alerts()
         if pending:
-          await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
-          for alert in pending:
-              if alert["reminder_counter"] == ESCALATION_LIMIT:
-                _LOGGER.info(f"ESCALATION: {alert}")
-                await self.store_escalation(alert)
-                await self.opsdroid.send(Message(build_escalation_message(alert)))
-              else:
-                await self.opsdroid.send(Message(self.build_event_message(alert)))
+            await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
+            for alert in pending:
+                if alert["reminder_counter"] == ESCALATION_LIMIT:
+                    _LOGGER.info(f"ESCALATION: {alert}")
+                    await self.store_escalation(alert)
+                    await self.opsdroid.send(Message(self.build_escalation_message(alert)))
+                else:
+                    alert["reminder_counter"] += 1
+                    await self.opsdroid.send(Message(self.build_event_message(alert)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
@@ -60,7 +61,7 @@ class EventManagerAck(Skill):
         pending = await self.get_pending_alerts()
         await message.respond("Pending alerts:")
         for alert in pending:
-              await self.opsdroid.send(Message(self.build_event_message(alert)))
+            await self.opsdroid.send(Message(self.build_event_message(alert)))
 
     @match_parse('!escalated')
     async def escalations(self, message):
@@ -70,7 +71,7 @@ class EventManagerAck(Skill):
         escalated = await self.get_escalations()
         await message.respond("Pending alerts:")
         for esc in escalated:
-              await self.opsdroid.send(Message(self.build_event_message(esc)))
+            await self.opsdroid.send(Message(self.build_event_message(esc)))
 
     # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
@@ -94,15 +95,16 @@ class EventManagerAck(Skill):
         """Return the pending alerts."""
         pending = await self.opsdroid.memory.get("pending_alerts")
         if pending is None:
-          pending = []
+            pending = []
         return pending
 
     async def get_escalations(self):
         """Return the escalations."""
         pending = await self.opsdroid.memory.get("pending_alerts")
         if pending is None:
-          pending = []
+            pending = []
         return pending
+
 
     async def store_alert(self, alert):
         """Store an alert into the database."""
@@ -154,8 +156,7 @@ class EventManagerAck(Skill):
     def build_event_message(self, alert):
         """Build an alert notification message."""
         return str(
-            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: \
-            '!ack {uuid}' ".format(
+            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
                 name=alert["name"],
                 severity=alert["severity"],
                 message=alert["message"],
@@ -165,8 +166,7 @@ class EventManagerAck(Skill):
     def build_escalation_message(self, alert):
         """Build an esclation message."""
         return str(
-            "ESCALATION: notifying relevant authorities about the following incident: \
-            {severity} {name}: {message}".format(
+            "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
                 name=alert["name"],
                 severity=alert["severity"],
                 message=alert["message"]
