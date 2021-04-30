@@ -1,20 +1,41 @@
+"""Skill for notifying users about pending (unacknowledged) alerts and escalations."""
+import uuid as uuid_pkg
+import logging
+import pprint
 from opsdroid.skill import Skill
 from opsdroid.matchers import match_parse
 from opsdroid.matchers import match_crontab
 from opsdroid.matchers import match_webhook
 from aiohttp.web import Request
 from opsdroid.events import Message
-import uuid
-import logging
-import pprint
 
 _LOGGER = logging.getLogger(__name__)
 ESCALATION_LIMIT = 3
+
+def build_event_message(alert):
+    """Build an alert notification message."""
+    return str(
+        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
+            name=alert["name"],
+            severity=alert["severity"],
+            message=alert["message"],
+            uuid=alert["uuid"]
+        ))
+
+def build_escalation_message(alert):
+    """Build an esclation message."""
+    return str(
+        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+            name=alert["name"],
+            severity=alert["severity"],
+            message=alert["message"]
+        ))
 
 class EventManagerAck(Skill):
 
     @match_webhook('webhook-ack')
     async def eventmanager_ack(self, event: Request):
+        """Alert webhook. Store the alerts in the database."""
         payload = await event.json()
         _LOGGER.debug('payload received by eventmanager: ' + pprint.pformat(payload))
 
@@ -27,77 +48,86 @@ class EventManagerAck(Skill):
             elif "description" in alert["annotations"]:
                 msg = alert["annotations"]["description"]
 
-            toBeStored = {
-              "uuid": uuid.uuid4().hex,
+            alert_context = {
+              "uuid": uuid_pkg.uuid4().hex,
               "severity": alert["labels"]["severity"].upper(),
               "name": alert["labels"]["alertname"],
               "message": msg,
               "reminder_counter": 0,
             }
 
-            await self.store_alert(toBeStored)
-            await self.opsdroid.send(Message(self.build_event_message(toBeStored)))    
+            await self.store_alert(alert_context)
+            await self.opsdroid.send(Message(build_event_message(alert_context)))
 
     #TOCHANGE every minute for testing pourposes
     @match_crontab('*/1 * * * *', timezone="Europe/Rome")
-    async def crontab_show_pending(self, event):
+    async def crontab_show_pending(self, _):
+        """Notify users about the pending alerts."""
         pending = await self.get_pending_alerts()
         if pending:
-          await self.opsdroid.send(Message(text="NOTE: Some confirmations still require your attention:"))
-          for p in pending:
-              if p["reminder_counter"] == ESCALATION_LIMIT:
-                _LOGGER.info(f"ESCALATION: {p}")
-                await self.opsdroid.send(Message(self.build_escalation_message(p)))
+          await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
+          for alert in pending:
+              if alert["reminder_counter"] == ESCALATION_LIMIT:
+                _LOGGER.info(f"ESCALATION: {alert}")
+                await self.store_escalation(alert)
+                await self.opsdroid.send(Message(build_escalation_message(alert)))
               else:
-                await self.opsdroid.send(Message(self.build_event_message(p)))
+                await self.opsdroid.send(Message(build_event_message(alter)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
+        """Respond with pending alerts."""
         _LOGGER.info(f"SKILL: '!pending' called")
         
         pending = await self.get_pending_alerts()
         await message.respond("Pending alerts:")
-        for p in pending:
-              await self.opsdroid.send(Message(self.build_event_message(p)))      
+        for alert in pending:
+              await self.opsdroid.send(Message(build_event_message(alert)))
 
     @match_parse('!escalated')
     async def escalations(self, message):
+        """Respond with escalations."""
         _LOGGER.info(f"SKILL: '!escalated' called")
 
         escalated = await self.get_escalations()
         await message.respond("Pending alerts:")
-        for p in pending:
-              await self.opsdroid.send(Message(self.build_event_message(p)))
+        for e in escalated:
+              await self.opsdroid.send(Message(build_event_message(e)))
 
     # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
     async def ack(self, message):
+        """Alias for 'acknowledge'"""
         self.acknowledge(message)
 
     @match_parse('!acknowledge {uuid}')
     async def acknowledge(self, message):
+        """Acknowledge a given alert. This prevents further notifications about it."""
         uuid = message.entities['uuid']['value']
         _LOGGER.info(f"SKILL: '!acknowledge' called with uuid {uuid}")
 
-        isFound = await self.delete_by_uuid(uuid)
-        if isFound == True:
+        is_found = await self.delete_by_uuid(uuid)
+        if is_found:
             await message.respond("Confirmation Success: {}".format(uuid))
         else:
             await message.respond("No match found for this ID: {}".format(uuid))
 
     async def get_pending_alerts(self):
+        """Return the pending alerts."""
         pending = await self.opsdroid.memory.get("pending_alerts")
         if pending is None:
           pending = []
         return pending
 
     async def get_escalations(self):
+        """Return the escalations."""
         pending = await self.opsdroid.memory.get("pending_alerts")
         if pending is None:
           pending = []
         return pending
 
     async def store_alert(self, alert):
+        """Store an alert into the database."""
         pending = await self.get_pending_alerts()
         pending.append(alert)
         await self.opsdroid.memory.put("pending_alerts", pending)
@@ -105,6 +135,7 @@ class EventManagerAck(Skill):
         await self.log_pending_alert_state()
 
     async def store_escalation(self, alert):
+        """Store an escalation into the database."""
         # Remove alert from pending list
         uuid = alert["uuid"]
         await self.delete_by_uuid(uuid)
@@ -116,42 +147,28 @@ class EventManagerAck(Skill):
         _LOGGER.info(f"DB: stored escalation: {alert}")
 
     async def log_pending_alert_state(self):
+        """Log the pending alerts"""
         pending = await self.get_pending_alerts()
         _LOGGER.info(f"DB: current pending alert state:")
         for ack in pending:
             _LOGGER.info(f"{ack}")    
 
     async def log_escalation_state(self):
+        """Log the escalations."""
         escalations = await self.get_escalations()
         _LOGGER.info(f"DB: current escalation state:")
-        for e in escalations:
-            _LOGGER.info(f"{e}")
+        for esc in escalations:
+            _LOGGER.info(f"{esc}")
 
     async def delete_by_uuid(self, uuid):
+        """Delete an alert by UUID from the pending list."""
         pending = await self.get_pending_alerts()
-        isFound = False
+        is_found = False
         for p in pending:
             if p["uuid"] == uuid:
                 pending.remove(p)
-                await self.opsdroid.memory.put("pending_alerts", pending_alerts)
-                isFound = True
+                await self.opsdroid.memory.put("pending_alerts", pending)
+                is_found = True
                 _LOGGER.info(f"DB: Deleted {p}")
                 await self.log_pending_alert_state()
-        return isFound   
-
-    def build_event_message(self, ack):
-        return str(
-            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
-                name=alert["name"],
-                severity=alert["severity"],
-                message=alert["message"],
-                uuid=alert["uuid"]
-            ))
-
-    def build_escalation_message(self, alert):
-        return str(
-            "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
-                name=alert["name"],
-                severity=alert["severity"],
-                message=alert["message"],
-            ))
+        return is_found
