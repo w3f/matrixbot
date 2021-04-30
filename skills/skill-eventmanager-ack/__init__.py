@@ -45,10 +45,10 @@ class EventManagerAck(Skill):
         if pending:
           await self.opsdroid.send(Message(text="NOTE: Some confirmations still require your attention:"))
           for p in pending:
-              if p["reminder_counter"] == ESCALATION_LIMIT
+              if p["reminder_counter"] == ESCALATION_LIMIT:
                 _LOGGER.info(f"ESCALATION: {p}")
                 await self.opsdroid.send(Message(self.build_escalation_message(p)))
-              else
+              else:
                 await self.opsdroid.send(Message(self.build_event_message(p)))
 
     @match_parse('!pending')
