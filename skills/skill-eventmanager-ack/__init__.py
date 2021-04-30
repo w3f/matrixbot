@@ -16,6 +16,7 @@ class EventManagerAck(Skill):
     async def eventmanager_ack(self, event: Request):
         payload = await event.json()
         _LOGGER.debug('payload received by eventmanager: ' + pprint.pformat(payload))
+
         for alert in payload["alerts"]:
             if alert["status"].upper() == "RESOLVED":
                 continue
@@ -31,6 +32,7 @@ class EventManagerAck(Skill):
               "name": alert["labels"]["alertname"],
               "message": msg
             }
+
             await self.store_alert(toBeStored)
             await self.opsdroid.send(Message(self.build_event_message(toBeStored)))    
 
@@ -49,7 +51,7 @@ class EventManagerAck(Skill):
     #     await self.store_alert({"uuid":uuid.uuid4().hex,"value":toBeStored})
     #     await message.respond('Stored: {}'.format(toBeStored))
 
-    @match_parse('ACK:pending')
+    @match_parse('!pending')
     async def pending_alerts(self, message):
         _LOGGER.info(f"SKILL: ACK pending called")
         
@@ -59,8 +61,13 @@ class EventManagerAck(Skill):
         for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))      
 
-    @match_parse('ACK:confirm {uuid}')
-    async def delete(self, message):
+    # Alias
+    @match_parse('!ack {uuid}')
+    async def ack(self, message):
+        self.acknowledge(message)
+
+    @match_parse('!acknowledge {uuid}')
+    async def acknowledge(self, message):
         uuid = message.entities['uuid']['value']
         _LOGGER.info(f"SKILL: ACK confirm called with uuid {uuid}")
 
