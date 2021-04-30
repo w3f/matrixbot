@@ -3,9 +3,7 @@ import uuid as uuid_pkg
 import logging
 import pprint
 from opsdroid.skill import Skill
-from opsdroid.matchers import match_parse
-from opsdroid.matchers import match_crontab
-from opsdroid.matchers import match_webhook
+from opsdroid.matchers import match_parse, match_crontab, match_webhook
 from aiohttp.web import Request
 from opsdroid.events import Message
 
@@ -15,7 +13,8 @@ ESCALATION_LIMIT = 3
 def build_event_message(alert):
     """Build an alert notification message."""
     return str(
-        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
+        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: \
+        '!ack {uuid}' ".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"],
@@ -25,7 +24,8 @@ def build_event_message(alert):
 def build_escalation_message(alert):
     """Build an esclation message."""
     return str(
-        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+        "ESCALATION: notifying relevant authorities about the following incident: \
+        {severity} {name}: {message}".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"]
@@ -72,13 +72,13 @@ class EventManagerAck(Skill):
                 await self.store_escalation(alert)
                 await self.opsdroid.send(Message(build_escalation_message(alert)))
               else:
-                await self.opsdroid.send(Message(build_event_message(alter)))
+                await self.opsdroid.send(Message(build_event_message(alert)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
         """Respond with pending alerts."""
         _LOGGER.info(f"SKILL: '!pending' called")
-        
+
         pending = await self.get_pending_alerts()
         await message.respond("Pending alerts:")
         for alert in pending:
@@ -91,8 +91,8 @@ class EventManagerAck(Skill):
 
         escalated = await self.get_escalations()
         await message.respond("Pending alerts:")
-        for e in escalated:
-              await self.opsdroid.send(Message(build_event_message(e)))
+        for esc in escalated:
+              await self.opsdroid.send(Message(build_event_message(esc)))
 
     # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
@@ -136,22 +136,22 @@ class EventManagerAck(Skill):
 
     async def store_escalation(self, alert):
         """Store an escalation into the database."""
-        # Remove alert from pending list
-        uuid = alert["uuid"]
-        await self.delete_by_uuid(uuid)
-
         # Add alert to escalation list
         escalations = await self.get_escalations()
         escalations.append(alert)
         await self.opsdroid.memory.put("escalated_alerts", escalations)
         _LOGGER.info(f"DB: stored escalation: {alert}")
 
+        # Remove alert from pending list
+        uuid = alert["uuid"]
+        await self.delete_by_uuid(uuid)
+
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
         pending = await self.get_pending_alerts()
         _LOGGER.info(f"DB: current pending alert state:")
         for ack in pending:
-            _LOGGER.info(f"{ack}")    
+            _LOGGER.info(f"{ack}")
 
     async def log_escalation_state(self):
         """Log the escalations."""
@@ -164,11 +164,11 @@ class EventManagerAck(Skill):
         """Delete an alert by UUID from the pending list."""
         pending = await self.get_pending_alerts()
         is_found = False
-        for p in pending:
-            if p["uuid"] == uuid:
-                pending.remove(p)
+        for alert in pending:
+            if alert["uuid"] == uuid:
+                pending.remove(alert)
                 await self.opsdroid.memory.put("pending_alerts", pending)
                 is_found = True
-                _LOGGER.info(f"DB: Deleted {p}")
+                _LOGGER.info(f"DB: Deleted {alert}")
                 await self.log_pending_alert_state()
         return is_found
