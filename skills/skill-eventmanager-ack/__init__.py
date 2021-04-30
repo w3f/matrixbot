@@ -77,7 +77,7 @@ class EventManagerAck(Skill):
     @match_parse('!acknowledge {uuid}')
     async def acknowledge(self, message):
         uuid = message.entities['uuid']['value']
-        _LOGGER.info(f"SKILL: ACK confirm called with uuid {uuid}")
+        _LOGGER.info(f"SKILL: '!acknowledge' called with uuid {uuid}")
 
         isFound = await self.delete_by_uuid(uuid)
         if isFound == True:
@@ -141,7 +141,7 @@ class EventManagerAck(Skill):
 
     def build_event_message(self, ack):
         return str(
-            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack:confirm {uuid}' ".format(
+            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
                 name=alert["name"],
                 severity=alert["severity"],
                 message=alert["message"],
