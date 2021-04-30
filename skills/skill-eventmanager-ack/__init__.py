@@ -9,6 +9,7 @@ import logging
 import pprint
 
 _LOGGER = logging.getLogger(__name__)
+ESCALATION_LIMIT = 3
 
 class EventManagerAck(Skill):
 
@@ -30,26 +31,24 @@ class EventManagerAck(Skill):
               "uuid": uuid.uuid4().hex,
               "severity": alert["labels"]["severity"].upper(),
               "name": alert["labels"]["alertname"],
-              "message": msg
+              "message": msg,
+              "reminder_counter": 0,
             }
 
             await self.store_alert(toBeStored)
             await self.opsdroid.send(Message(self.build_event_message(toBeStored)))    
 
-    #TOCHANGE very one minute for testing pourposes
+    #TOCHANGE every minute for testing pourposes
     @match_crontab('*/1 * * * *', timezone="Europe/Rome")
     async def crontab_show_pending(self, event):
         pending = await self.get_pending_alerts()
         if pending:
-          await self.opsdroid.send(Message(text="ACK SERVICE: Some confirmations still require your attention:"))
+          await self.opsdroid.send(Message(text="NOTE: Some confirmations still require your attention:"))
           for p in pending:
-              await self.opsdroid.send(Message(self.build_event_message(p)))  
-
-    # @match_parse('ACK:store {toBeStored}')
-    # async def store(self, message):
-    #     toBeStored = message.entities['toBeStored']['value']
-    #     await self.store_alert({"uuid":uuid.uuid4().hex,"value":toBeStored})
-    #     await message.respond('Stored: {}'.format(toBeStored))
+              if p["reminder_counter"] == ESCALATION_LIMIT
+                await self.opsdroid.send(Message(self.build_escalation_message(p)))
+              else
+                await self.opsdroid.send(Message(self.build_event_message(p)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
@@ -57,11 +56,11 @@ class EventManagerAck(Skill):
         
         pending = await self.get_pending_alerts()
         await self.log_alert(pending)
-        await message.respond("ACK SERVICE: Pending Acks:")
+        await message.respond("Pending alerts:")
         for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))      
 
-    # Alias
+    # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
     async def ack(self, message):
         self.acknowledge(message)
@@ -73,9 +72,9 @@ class EventManagerAck(Skill):
 
         isFound = await self.delete_by_uuid(uuid)
         if isFound == True:
-            await message.respond("ACK SERVICE: Confirmation Success: {}".format(uuid))     
+            await message.respond("Confirmation Success: {}".format(uuid))
         else:
-            await message.respond("ACK SERVICE: No id match found for this id: {}".format(uuid))        
+            await message.respond("No match found for this ID: {}".format(uuid))
 
     async def get_pending_alerts(self):
         pending = await self.opsdroid.memory.get("pending_alerts")
@@ -83,7 +82,7 @@ class EventManagerAck(Skill):
           pending = []
         return pending
 
-    async def store_alert(self,toBeStored):
+    async def store_alert(self, toBeStored):
         pending = await self.get_pending_alerts()
         pending.append(toBeStored)
         await self.opsdroid.memory.put("pending_alerts", pending)
@@ -96,28 +95,36 @@ class EventManagerAck(Skill):
         for ack in pending:
             _LOGGER.info(f"{ack}")    
 
-    async def log_alert(self,acks):
-        _LOGGER.info(f"SKILL: acks:")
-        for ack in acks:
-            _LOGGER.info(f"{ack}")         
+    async def log_alert(self, alerts):
+        _LOGGER.info(f"SKILL: alerts:")
+        for alert in alerts:
+            _LOGGER.info(f"{alert}")
 
-    async def delete_by_uuid(self,uuid):
+    async def delete_by_uuid(self, uuid):
         pending = await self.get_pending_alerts()
         isFound = False
-        for ack in pending:
-            if ack["uuid"] == uuid:
-                pending.remove(ack)
+        for p in pending:
+            if p["uuid"] == uuid:
+                pending.remove(p)
                 await self.opsdroid.memory.put("pending_alerts", pending_alerts)
                 isFound = True
-                _LOGGER.info(f"DB: Deleted {ack}") 
+                _LOGGER.info(f"DB: Deleted {p}")
                 await self.log_db_state()
         return isFound   
 
-    def build_event_message(self,ack):
+    def build_event_message(self, ack):
         return str(
-                "{severity} {name}: {message}. Please provide a confirmation using the following command: 'ACK:confirm {uuid}' ".format(
-                    name=ack["name"],
-                    severity=ack["severity"],
-                    message=ack["message"],
-                    uuid=ack["uuid"]
-                ))                        
+            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack:confirm {uuid}' ".format(
+                name=alert["name"],
+                severity=alert["severity"],
+                message=alert["message"],
+                uuid=alert["uuid"]
+            ))
+
+    def build_escalation_message(self, alert):
+        return str(
+            "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+                name=alert["name"],
+                severity=alert["severity"],
+                message=alert["message"],
+            ))
