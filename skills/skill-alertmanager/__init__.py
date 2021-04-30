@@ -21,9 +21,8 @@ class AlertManager(Skill):
         pending_acks = self.opsdroid.memory.get("pending_ack")
 
         for alert in payload["alerts"]:
-            # Append new alert, where the boolean indicates whether the alert
-            # was acknowledged.
-            pending_acks.append((false, alert))
+            # Append new alert
+            pending_acks.append(alert)
 
             msg = ""
             if "message" in alert["annotations"]:

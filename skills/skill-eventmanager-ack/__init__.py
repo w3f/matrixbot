@@ -31,13 +31,13 @@ class MySkill(Skill):
               "name": alert["labels"]["alertname"],
               "message": msg
             }
-            await self.store_ack(toBeStored)
+            await self.store_alert(toBeStored)
             await self.opsdroid.send(Message(self.build_event_message(toBeStored)))    
 
     #TOCHANGE very one minute for testing pourposes
     @match_crontab('*/1 * * * *', timezone="Europe/Rome")
     async def crontab_show_pending(self, event):
-        pending = await self.get_pending_acks()
+        pending = await self.get_pending_alerts()
         if pending:
           await self.opsdroid.send(Message(text="ACK SERVICE: Some confirmations still require your attention:"))
           for p in pending:
@@ -46,15 +46,15 @@ class MySkill(Skill):
     # @match_parse('ACK:store {toBeStored}')
     # async def store(self, message):
     #     toBeStored = message.entities['toBeStored']['value']
-    #     await self.store_ack({"uuid":uuid.uuid4().hex,"value":toBeStored})
+    #     await self.store_alert({"uuid":uuid.uuid4().hex,"value":toBeStored})
     #     await message.respond('Stored: {}'.format(toBeStored))
 
     @match_parse('ACK:pending')
-    async def pending_acks(self, message):
+    async def pending_alerts(self, message):
         _LOGGER.info(f"SKILL: ACK pending called")
         
-        pending = await self.get_pending_acks()
-        await self.log_acks(pending)
+        pending = await self.get_pending_alerts()
+        await self.log_alert(pending)
         await message.respond("ACK SERVICE: Pending Acks:")
         for p in pending:
               await self.opsdroid.send(Message(self.build_event_message(p)))      
@@ -70,37 +70,37 @@ class MySkill(Skill):
         else:
             await message.respond("ACK SERVICE: No id match found for this id: {}".format(uuid))        
 
-    async def get_pending_acks(self):
-        pending_acks = await self.opsdroid.memory.get("pending_ack")
-        if pending_acks is None:
-          pending_acks = []
-        return pending_acks  
+    async def get_pending_alerts(self):
+        pending = await self.opsdroid.memory.get("pending_alerts")
+        if pending is None:
+          pending = []
+        return pending
 
-    async def store_ack(self,toBeStored):
-        acks = await self.get_pending_acks()
+    async def store_alert(self,toBeStored):
+        acks = await self.get_pending_alerts()
         acks.append(toBeStored)
-        await self.opsdroid.memory.put("pending_ack", acks)
+        await self.opsdroid.memory.put("pending_alerts", acks)
         _LOGGER.info(f"DB: Stored {toBeStored}")
         await self.log_db_state()
 
     async def log_db_state(self):
-        pending_acks = await self.get_pending_acks()
+        pending = await self.get_pending_alerts()
         _LOGGER.info(f"DB: current state, pending acks:")
-        for ack in pending_acks:
+        for ack in pending:
             _LOGGER.info(f"{ack}")    
 
-    async def log_acks(self,acks):
+    async def log_alert(self,acks):
         _LOGGER.info(f"SKILL: acks:")
         for ack in acks:
             _LOGGER.info(f"{ack}")         
 
     async def delete_by_uuid(self,uuid):
-        pending_acks = await self.get_pending_acks()
+        pending = await self.get_pending_alerts()
         isFound = False
-        for ack in pending_acks:
+        for ack in pending:
             if ack["uuid"] == uuid:
-                pending_acks.remove(ack)
-                await self.opsdroid.memory.put("pending_ack", pending_acks)
+                pending.remove(ack)
+                await self.opsdroid.memory.put("pending_alerts", pending_alerts)
                 isFound = True
                 _LOGGER.info(f"DB: Deleted {ack}") 
                 await self.log_db_state()
