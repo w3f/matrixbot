@@ -9,7 +9,6 @@ import pprint
 
 _LOGGER = logging.getLogger(__name__)
 
-
 class AlertManager(Skill):
     @match_webhook('webhook')
     async def alertmanager(self, event: Request):
@@ -17,7 +16,15 @@ class AlertManager(Skill):
         _LOGGER.debug('payload receiveddd by alertmanager: ' +
                       pprint.pformat(payload))
 
+        # TODO: Is there a cleaner way to do this?
+        # Read the current, pending acks.
+        pending_acks = self.opsdroid.memory.get("pending_ack")
+
         for alert in payload["alerts"]:
+            # Append new alert, where the boolean indicates whether the alert
+            # was acknowledged.
+            pending_acks.append((false, alert))
+
             msg = ""
             if "message" in alert["annotations"]:
                 msg = alert["annotations"]["message"]
@@ -43,3 +50,6 @@ class AlertManager(Skill):
                         severity=alert["labels"]["severity"].upper(),
                         message=msg)
                 )))
+
+        # Insert pending acks back into storage
+        self.opsdroid.memory.put("pending_ack", pending_acks)
