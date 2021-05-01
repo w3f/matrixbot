@@ -96,7 +96,7 @@ class EventManagerAck(Skill):
     @match_parse('!ack {uuid}')
     async def ack(self, message):
         """Alias for 'acknowledge'"""
-        self.acknowledge(message)
+        await self.acknowledge(message)
 
     @match_parse('!acknowledge {uuid}')
     async def acknowledge(self, message):
