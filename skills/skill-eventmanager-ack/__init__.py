@@ -9,6 +9,25 @@ from opsdroid.events import Message
 _LOGGER = logging.getLogger(__name__)
 ESCALATION_LIMIT = 3
 
+def build_event_message(alert):
+    """Build an alert notification message."""
+    return str(
+        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
+            name=alert["name"],
+            severity=alert["severity"],
+            message=alert["message"],
+            uuid=alert["uuid"]
+        ))
+
+def build_escalation_message(alert):
+    """Build an esclation message."""
+    return str(
+        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+            name=alert["name"],
+            severity=alert["severity"],
+            message=alert["message"]
+        ))
+
 class EventManagerAck(Skill):
 
     @match_webhook('webhook-ack')
@@ -35,7 +54,7 @@ class EventManagerAck(Skill):
             }
 
             await self.store_alert(alert_context)
-            await self.opsdroid.send(Message(self.build_event_message(alert_context)))
+            await self.opsdroid.send(Message(build_event_message(alert_context)))
 
     #TOCHANGE every minute for testing pourposes
     @match_crontab('*/1 * * * *', timezone="Europe/Rome")
@@ -48,10 +67,10 @@ class EventManagerAck(Skill):
                 if alert["reminder_counter"] == ESCALATION_LIMIT:
                     _LOGGER.info(f"ESCALATION: {alert}")
                     await self.store_escalation(alert)
-                    await self.opsdroid.send(Message(self.build_escalation_message(alert)))
+                    await self.opsdroid.send(Message(build_escalation_message(alert)))
                 else:
                     alert["reminder_counter"] += 1
-                    await self.opsdroid.send(Message(self.build_event_message(alert)))
+                    await self.opsdroid.send(Message(build_event_message(alert)))
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
@@ -61,7 +80,7 @@ class EventManagerAck(Skill):
         pending = await self.get_pending_alerts()
         await message.respond("Pending alerts:")
         for alert in pending:
-            await self.opsdroid.send(Message(self.build_event_message(alert)))
+            await self.opsdroid.send(Message(build_event_message(alert)))
 
     @match_parse('!escalated')
     async def escalations(self, message):
@@ -71,7 +90,7 @@ class EventManagerAck(Skill):
         escalated = await self.get_escalations()
         await message.respond("Pending alerts:")
         for esc in escalated:
-            await self.opsdroid.send(Message(self.build_event_message(esc)))
+            await self.opsdroid.send(Message(build_event_message(esc)))
 
     # Alias for `!acknowledge`
     @match_parse('!ack {uuid}')
@@ -151,23 +170,5 @@ class EventManagerAck(Skill):
                 is_found = True
                 _LOGGER.info(f"DB: Deleted {alert}")
                 await self.log_pending_alert_state()
+                break
         return is_found
-
-    def build_event_message(self, alert):
-        """Build an alert notification message."""
-        return str(
-            "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
-                name=alert["name"],
-                severity=alert["severity"],
-                message=alert["message"],
-                uuid=alert["uuid"]
-            ))
-
-    def build_escalation_message(self, alert):
-        """Build an esclation message."""
-        return str(
-            "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
-                name=alert["name"],
-                severity=alert["severity"],
-                message=alert["message"]
-            ))
