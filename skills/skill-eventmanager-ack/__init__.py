@@ -130,8 +130,8 @@ class EventManagerAck(Skill):
         """Log the pending alerts"""
         pending = await self.get_pending_alerts()
         _LOGGER.info(f"DB: current pending alert state:")
-        for ack in pending:
-            _LOGGER.info(f"{ack}")
+        for alert in pending:
+            _LOGGER.info(f"{alert}")
 
     async def log_escalation_state(self):
         """Log the escalations."""
