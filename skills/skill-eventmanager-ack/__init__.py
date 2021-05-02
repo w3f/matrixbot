@@ -69,8 +69,14 @@ class EventManagerAck(Skill):
                     await self.store_escalation(alert)
                     await self.opsdroid.send(Message(build_escalation_message(alert)))
                 else:
+                    pending.remove(alert)
+                    # Increment counter
                     alert["reminder_counter"] += 1
+                    pending.append(alert)
                     await self.opsdroid.send(Message(build_event_message(alert)))
+
+        # Add back updated entries
+        await self.opsdroid.memory.put("pending_alerts", pending)
 
     @match_parse('!pending')
     async def pending_alerts(self, message):
@@ -78,9 +84,12 @@ class EventManagerAck(Skill):
         _LOGGER.info(f"SKILL: '!pending' called")
 
         pending = await self.get_pending_alerts()
-        await message.respond("Pending alerts:")
-        for alert in pending:
-            await self.opsdroid.send(Message(build_event_message(alert)))
+        if pending:
+            await message.respond("Pending alerts:")
+            for alert in pending:
+                await self.opsdroid.send(Message(build_event_message(alert)))
+        else:
+            await message.respond("There are no pending alerts")
 
     @match_parse('!escalated')
     async def escalations(self, message):
@@ -140,7 +149,6 @@ class EventManagerAck(Skill):
         escalations.append(alert)
         await self.opsdroid.memory.put("escalated_alerts", escalations)
         _LOGGER.info(f"DB: stored escalation: {alert}")
-
         # Remove alert from pending list
         uuid = alert["uuid"]
         await self.delete_by_uuid(uuid)
@@ -170,5 +178,4 @@ class EventManagerAck(Skill):
                 is_found = True
                 _LOGGER.info(f"DB: Deleted {alert}")
                 await self.log_pending_alert_state()
-                break
         return is_found
