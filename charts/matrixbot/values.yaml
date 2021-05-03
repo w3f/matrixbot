@@ -9,6 +9,7 @@ image:
 botUser: "user"
 botPassword: "pass"
 roomId: "room"
+roomEscalationId: "room"
 
 homeserver: "https://matrix.web3.foundation"
 

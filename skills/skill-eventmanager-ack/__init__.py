@@ -28,6 +28,15 @@ def build_escalation_message(alert):
             message=alert["message"]
         ))
 
+def build_escalation_occurred(alert):
+    """Build an esclation message with ends up in the final escalation channel"""
+    return str(
+        "ESCALATION occurred: {severity} {name}: {message}".format(
+            name=alert["name"],
+            severity=alert["severity"],
+            message=alert["message"]
+        ))
+
 class EventManagerAck(Skill):
 
     @match_webhook('webhook-ack')
@@ -148,10 +157,15 @@ class EventManagerAck(Skill):
         escalations = await self.get_escalations()
         escalations.append(alert)
         await self.opsdroid.memory.put("escalated_alerts", escalations)
+
         _LOGGER.info(f"DB: stored escalation: {alert}")
+
         # Remove alert from pending list
         uuid = alert["uuid"]
         await self.delete_by_uuid(uuid)
+
+        # Notifying escalation room about this event.
+        self.opsdroid.send(Message(text=build_escalation_occurred(alert), target="escalation"))
 
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
