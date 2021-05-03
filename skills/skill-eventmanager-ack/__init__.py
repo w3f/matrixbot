@@ -29,7 +29,7 @@ def build_escalation_message(alert):
         ))
 
 def build_escalation_occurred(alert):
-    """Build an esclation message with ends up in the final escalation channel"""
+    """Build an escalation message with ends up in the final escalation channel"""
     return str(
         "ESCALATION occurred: {severity} {name}: {message}".format(
             name=alert["name"],
@@ -157,15 +157,13 @@ class EventManagerAck(Skill):
         escalations = await self.get_escalations()
         escalations.append(alert)
         await self.opsdroid.memory.put("escalated_alerts", escalations)
-
         _LOGGER.info(f"DB: stored escalation: {alert}")
-
         # Remove alert from pending list
         uuid = alert["uuid"]
         await self.delete_by_uuid(uuid)
-
+        await self.log_escalation_state()
         # Notifying escalation room about this event.
-        self.opsdroid.send(Message(text=build_escalation_occurred(alert), target="escalation"))
+        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=self.config.get("escalation_room"))))
 
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
