@@ -115,7 +115,7 @@ class EventManagerAck(Skill):
 
         is_found = await self.delete_by_uuid(uuid)
         if is_found:
-            await message.respond("Confirmation Success: {}".format(uuid))
+            await message.respond("Confirmation succeeded: {}".format(uuid))
         else:
             await message.respond("No match found for this ID: {}".format(uuid))
 
@@ -128,7 +128,7 @@ class EventManagerAck(Skill):
 
     async def get_escalations(self):
         """Return the escalations."""
-        pending = await self.opsdroid.memory.get("pending_alerts")
+        pending = await self.opsdroid.memory.get("escalated_alerts")
         if pending is None:
             pending = []
         return pending
