@@ -7,7 +7,7 @@ from aiohttp.web import Request
 from opsdroid.events import Message
 
 _LOGGER = logging.getLogger(__name__)
-ESCALATION_LIMIT = 3
+ESCALATION_LIMIT = 0
 
 def build_event_message(alert):
     """Build an alert notification message."""
@@ -164,6 +164,7 @@ class EventManagerAck(Skill):
         await self.log_escalation_state()
 
         # Notifying escalation room about this event.
+        _LOGGER.info(f"FETCHING ESCALATION ROOM NAME")
         room_name = self.config.get("escalation_room")
         _LOGGER.info(f"ESCALATION ROOM : {roon_name}")
         await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=self.config.get("escalation_room")))
