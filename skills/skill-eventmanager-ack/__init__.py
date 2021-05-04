@@ -157,12 +157,16 @@ class EventManagerAck(Skill):
         escalations.append(alert)
         await self.opsdroid.memory.put("escalated_alerts", escalations)
         _LOGGER.info(f"DB: stored escalation: {alert}")
+
         # Remove alert from pending list
         uuid = alert["uuid"]
         await self.delete_by_uuid(uuid)
         await self.log_escalation_state()
+
         # Notifying escalation room about this event.
-        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=self.config.get("escalation_room"))))
+        room_name = self.config.get("escalation_room")
+        _LOGGER.info(f"ESCALATION ROOM : {roon_name}")
+        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=self.config.get("escalation_room")))
 
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
