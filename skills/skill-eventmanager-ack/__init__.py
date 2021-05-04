@@ -142,7 +142,6 @@ class EventManagerAck(Skill):
             pending = []
         return pending
 
-
     async def store_alert(self, alert):
         """Store an alert into the database."""
         pending = await self.get_pending_alerts()
