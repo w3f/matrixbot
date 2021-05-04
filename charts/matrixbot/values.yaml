@@ -19,3 +19,4 @@ skills:
   path: /app/skills/skill-eventmanager
 - name: eventmanagerack
   path: /app/skills/skill-eventmanager-ack
+  escalation_room: "room"

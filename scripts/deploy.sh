@@ -15,6 +15,7 @@ else
     else
         MATRIXBOT_ROOM_ID="${COMM_MATRIXBOT_ROOM_ID}"
     fi
+    MATRIXBOT_ESCALATION_ROOM_ID="${W3F_MATRIXBOT_ESCALATION_ROOM_ID}"
 fi
 
 /scripts/deploy.sh -c ${ENVIRONMENT} -t helm -a "--set botUser=${MATRIXBOT_USER} --set botPassword=${MATRIXBOT_PASSWORD} --set roomId=${MATRIXBOT_ROOM_ID} --set roomEscalationId=${MATRIXBOT_ESCALATION_ROOM_ID} --set image.tag=${CIRCLE_TAG} ${RELEASE_NAME} w3f/matrixbot"
