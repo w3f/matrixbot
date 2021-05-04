@@ -1,6 +1,7 @@
 import uuid as uuid_pkg
 import logging
 import pprint
+import time
 from opsdroid.skill import Skill
 from opsdroid.matchers import match_parse, match_crontab, match_webhook
 from aiohttp.web import Request
@@ -72,6 +73,7 @@ class EventManagerAck(Skill):
         pending = await self.get_pending_alerts()
         if pending:
             await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
+            time.sleep(1)
             for alert in pending:
                 if alert["reminder_counter"] == ESCALATION_LIMIT:
                     _LOGGER.info(f"ESCALATION: {alert}")
@@ -95,6 +97,7 @@ class EventManagerAck(Skill):
         pending = await self.get_pending_alerts()
         if pending:
             await message.respond("Pending alerts:")
+            time.sleep(1)
             for alert in pending:
                 await self.opsdroid.send(Message(build_event_message(alert)))
         else:
@@ -107,6 +110,7 @@ class EventManagerAck(Skill):
 
         escalated = await self.get_escalations()
         await message.respond("Pending alerts:")
+        time.sleep(1)
         for esc in escalated:
             await self.opsdroid.send(Message(build_event_message(esc)))
 
@@ -164,10 +168,9 @@ class EventManagerAck(Skill):
         await self.log_escalation_state()
 
         # Notifying escalation room about this event.
-        _LOGGER.info(f"FETCHING ESCALATION ROOM NAME")
-        room_name = self.config.get("escalation_room")
-        _LOGGER.info(f"ESCALATION ROOM : {roon_name}")
-        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=self.config.get("escalation_room")))
+        escalation_room = self.config.get("escalation_room")
+        _LOGGER.info(f"Notifying room {escalation_room} about escalation")
+        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_room))
 
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
