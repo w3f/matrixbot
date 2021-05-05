@@ -8,12 +8,12 @@ from aiohttp.web import Request
 from opsdroid.events import Message
 
 _LOGGER = logging.getLogger(__name__)
-ESCALATION_LIMIT = 0
+ESCALATION_LIMIT = 3
 
 def build_event_message(alert):
     """Build an alert notification message."""
     return str(
-        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: '!ack {uuid}' ".format(
+        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: !ack {uuid}".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"],
@@ -193,8 +193,10 @@ class EventManagerAck(Skill):
         for alert in pending:
             if alert["uuid"] == uuid:
                 pending.remove(alert)
-                await self.opsdroid.memory.put("pending_alerts", pending)
                 is_found = True
-                _LOGGER.info(f"DB: Deleted {alert}")
-                await self.log_pending_alert_state()
+                _LOGGER.info(f"DB: deleted {alert}")
+
+        await self.opsdroid.memory.put("pending_alerts", pending)
+        await self.log_pending_alert_state()
+
         return is_found
