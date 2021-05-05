@@ -75,12 +75,12 @@ class EventManagerAck(Skill):
             await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
             time.sleep(1)
             for alert in pending:
+                pending.remove(alert)
                 if alert["reminder_counter"] == ESCALATION_LIMIT:
                     _LOGGER.info(f"ESCALATION: {alert}")
                     await self.store_escalation(alert)
                     await self.opsdroid.send(Message(build_escalation_message(alert)))
                 else:
-                    pending.remove(alert)
                     # Increment counter
                     alert["reminder_counter"] += 1
                     pending.append(alert)
