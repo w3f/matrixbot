@@ -13,7 +13,7 @@ ESCALATION_LIMIT = 3
 def build_event_message(alert):
     """Build an alert notification message."""
     return str(
-        "{severity} {name}: {message}\nPlease provide a acknowledgment using the following command: !ack {uuid}".format(
+        "{severity} {name}: {message} \nPlease provide a acknowledgment using the following command: \"ack {uuid}\"".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"],
@@ -89,10 +89,18 @@ class EventManagerAck(Skill):
         # Add back updated entries
         await self.opsdroid.memory.put("pending_alerts", pending)
 
-    @match_parse('!pending')
+    @match_parse('help')
+    async def help(self, message):
+        await message.respond((
+            "\"ack <ID>'\" - Acknowledge the the given alert.\n"
+            "\"pending\" - Show list of pending alerts.\n"
+            "\"escalated\" - Show list of escalated alerts."
+        ))
+
+    @match_parse('pending')
     async def pending_alerts(self, message):
         """Respond with pending alerts."""
-        _LOGGER.info(f"SKILL: '!pending' called")
+        _LOGGER.info(f"SKILL: 'pending' called")
 
         pending = await self.get_pending_alerts()
         if pending:
@@ -103,24 +111,27 @@ class EventManagerAck(Skill):
         else:
             await message.respond("There are no pending alerts")
 
-    @match_parse('!escalated')
+    @match_parse('escalated')
     async def escalations(self, message):
         """Respond with escalations."""
-        _LOGGER.info(f"SKILL: '!escalated' called")
+        _LOGGER.info(f"SKILL: 'escalated' called")
 
         escalated = await self.get_escalations()
-        await message.respond("Pending alerts:")
-        time.sleep(1)
-        for esc in escalated:
-            await self.opsdroid.send(Message(build_event_message(esc)))
+        if escalated:
+            await message.respond("Escalated alerts:")
+            time.sleep(1)
+            for alert in escalated:
+                await self.opsdroid.send(Message(build_event_message(alert)))
+        else:
+            await message.respond("There are no escalated alerts")
 
-    # Alias for `!acknowledge`
-    @match_parse('!ack {uuid}')
+    # Alias for `acknowledge`
+    @match_parse('ack {uuid}')
     async def ack(self, message):
         """Alias for 'acknowledge'"""
         await self.acknowledge(message)
 
-    @match_parse('!acknowledge {uuid}')
+    @match_parse('acknowledge {uuid}')
     async def acknowledge(self, message):
         """Acknowledge a given alert. This prevents further notifications about it."""
         uuid = message.entities['uuid']['value']
