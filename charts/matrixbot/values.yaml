@@ -20,3 +20,4 @@ skills:
 - name: eventmanagerack
   path: /app/skills/skill-eventmanager-ack
   escalation_room: "room"
+  escalation_threshold: 3
