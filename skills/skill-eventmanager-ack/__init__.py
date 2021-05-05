@@ -8,7 +8,6 @@ from aiohttp.web import Request
 from opsdroid.events import Message
 
 _LOGGER = logging.getLogger(__name__)
-ESCALATION_LIMIT = 3
 
 def build_event_message(alert):
     """Build an alert notification message."""
