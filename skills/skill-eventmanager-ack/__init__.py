@@ -92,7 +92,7 @@ class EventManagerAck(Skill):
     @match_parse('help')
     async def help(self, message):
         await message.respond((
-            "\"ack <ID>'\" - Acknowledge the the given alert.\n"
+            "\"ack ALERT_ID\" - Acknowledge the the given alert.\n"
             "\"pending\" - Show list of pending alerts.\n"
             "\"escalated\" - Show list of escalated alerts."
         ))
