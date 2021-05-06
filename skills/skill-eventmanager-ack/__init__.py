@@ -78,7 +78,7 @@ class EventManagerAck(Skill):
                 # Increment counter
                 alert["reminder_counter"] += 1
 
-                if alert["reminder_counter"] == self.config.get("escalation_threshold"):
+                if alert["reminder_counter"] >= self.config.get("escalation_threshold"):
                     _LOGGER.info(f"ESCALATION: {alert}")
                     await self.store_escalation(alert)
                     await self.opsdroid.send(Message(build_escalation_message(alert)))
