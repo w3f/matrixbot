@@ -107,7 +107,7 @@ class EventManagerAck(Skill):
             await message.respond("Pending alerts:")
             time.sleep(1)
             for alert in pending:
-                await self.opsdroid.send(Message(build_event_message(alert)))
+                await message.respond(Message(build_event_message(alert)))
         else:
             await message.respond("There are no pending alerts")
 
@@ -121,7 +121,11 @@ class EventManagerAck(Skill):
             await message.respond("Escalated alerts:")
             time.sleep(1)
             for alert in escalated:
-                await self.opsdroid.send(Message(build_event_message(alert)))
+                await message.respond(Message(str("ESCALATION: {severity} {name}: {message}".format(
+                    name=alert["name"],
+                    severity=alert["severity"],
+                    message=alert["message"]
+                ))))
         else:
             await message.respond("There are no escalated alerts")
 
