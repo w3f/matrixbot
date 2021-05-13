@@ -19,7 +19,8 @@ data:
         password: {{ .Values.botPassword | quote }}
         rooms:
           "main": {{ .Values.roomId | quote }}
-          "escalation_room": {{ .Values.roomEscalationId | quote }}
+          "escalation_room1": {{ .Values.roomEscalationId1 | quote }}
+          "escalation_room2": {{ .Values.roomEscalationId1 | quote }}
         homeserver: {{ .Values.homeserver }}
         enable_encryption: True
         store_path: "/app/store/"

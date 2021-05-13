@@ -11,8 +11,13 @@ _LOGGER = logging.getLogger(__name__)
 
 def build_event_message(alert):
     """Build an alert notification message."""
+    prefix = ""
+    if alert["counter"] > 0:
+        prefix = "Reminder: "
+
     return str(
-        "{severity} {name}: {message} \nPlease provide a acknowledgment using the following command: \"ack {uuid}\"".format(
+        "{prefix}{severity} {name}: {message} \nPlease provide a acknowledgment using the following command: \"ack {uuid}\"".format(
+            prefix=prefix,
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"],
@@ -20,18 +25,23 @@ def build_event_message(alert):
         ))
 
 def build_escalation_message(alert):
-    """Build an esclation message."""
+    """Build an escalation message with ends up in the final escalation channel"""
+    prefix = ""
+    if alert["counter"] > 0:
+        prefix = "Reminder: "
+
     return str(
-        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+        "{prefix}ESCALATION occurred: {severity} {name}: {message}".format(
+            prefix=prefix,
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"]
         ))
 
-def build_escalation_occurred(alert):
-    """Build an escalation message with ends up in the final escalation channel"""
+def build_escalation_occured(alert):
+    """Build an esclation message."""
     return str(
-        "ESCALATION occurred: {severity} {name}: {message}".format(
+        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"]
@@ -59,7 +69,8 @@ class EventManagerAck(Skill):
                 "severity": alert["labels"]["severity"].upper(),
                 "name": alert["labels"]["alertname"],
                 "message": msg,
-                "reminder_counter": 0,
+                "counter": 0,
+                "room_index": 0,
             }
 
             await self.store_alert(alert_context)
@@ -70,21 +81,34 @@ class EventManagerAck(Skill):
     async def crontab_show_pending(self, _):
         """Notify users about the pending alerts."""
         pending = await self.get_pending_alerts()
+        escalation_rooms = self.config.get("escalation_rooms")
+        escalation_threshold = self.config.get("escalation_threshold")
+
         if pending:
-            await self.opsdroid.send(Message(text="Some confirmations still require your attention:"))
             time.sleep(1)
             for alert in pending:
                 pending.remove(alert)
-                # Increment counter
-                alert["reminder_counter"] += 1
+                alert["counter"] += 1
 
-                if alert["reminder_counter"] >= self.config.get("escalation_threshold"):
+                if alert["counter"] >= escalation_threshold and len(escalation_rooms) > alert["room_index"]:
+                    # Warn current room about escalation.
                     _LOGGER.info(f"ESCALATION: {alert}")
-                    await self.store_escalation(alert)
-                    await self.opsdroid.send(Message(build_escalation_message(alert)))
+                    await self.opsdroid.send(Message(text=build_escalation_occured(alert), target=escalation_rooms[alert["room_index"]]))
+
+                    # Increment room index (escalations levels).
+                    alert["room_index"] += 1
+                    alert["counter"] = 0
+
+                    # Inform next room about escalation.
+                    next_room = escalation_rooms[alert["room_index"]]
+                    _LOGGER.info(f"Notifying room {next_room} about escalation")
+                    await self.opsdroid.send(Message(text=build_escalation_message(alert), target=next_room))
                 else:
-                    pending.append(alert)
-                    await self.opsdroid.send(Message(build_event_message(alert)))
+                    if alert["room_index"] == 0:
+                        await self.opsdroid.send(Message(build_event_message(alert)))
+                    else:
+                        await self.opsdroid.send(Message(build_escalation_message(alert)))
+            pending.append(alert)
 
         # Add back updated entries
         await self.opsdroid.memory.put("pending_alerts", pending)
@@ -107,7 +131,8 @@ class EventManagerAck(Skill):
             await message.respond("Pending alerts:")
             time.sleep(1)
             for alert in pending:
-                await message.respond(Message(build_event_message(alert)))
+                if alert["room_index"] == 0:
+                    await message.respond(Message(build_event_message(alert)))
         else:
             await message.respond("There are no pending alerts")
 
@@ -121,11 +146,12 @@ class EventManagerAck(Skill):
             await message.respond("Escalated alerts:")
             time.sleep(1)
             for alert in escalated:
-                await message.respond(Message(str("ESCALATION: {severity} {name}: {message}".format(
-                    name=alert["name"],
-                    severity=alert["severity"],
-                    message=alert["message"]
-                ))))
+                if alert["room_index"] > 0:
+                    await message.respond(Message(str("ESCALATION: {severity} {name}: {message}".format(
+                        name=alert["name"],
+                        severity=alert["severity"],
+                        message=alert["message"]
+                    ))))
         else:
             await message.respond("There are no escalated alerts")
 
@@ -154,13 +180,6 @@ class EventManagerAck(Skill):
             pending = []
         return pending
 
-    async def get_escalations(self):
-        """Return the escalations."""
-        pending = await self.opsdroid.memory.get("escalated_alerts")
-        if pending is None:
-            pending = []
-        return pending
-
     async def store_alert(self, alert):
         """Store an alert into the database."""
         pending = await self.get_pending_alerts()
@@ -169,37 +188,12 @@ class EventManagerAck(Skill):
         _LOGGER.info(f"DB: stored alert: {alert}")
         await self.log_pending_alert_state()
 
-    async def store_escalation(self, alert):
-        """Store an escalation into the database."""
-        # Add alert to escalation list
-        escalations = await self.get_escalations()
-        escalations.append(alert)
-        await self.opsdroid.memory.put("escalated_alerts", escalations)
-        _LOGGER.info(f"DB: stored escalation: {alert}")
-
-        # Remove alert from pending list
-        uuid = alert["uuid"]
-        await self.delete_by_uuid(uuid)
-        await self.log_escalation_state()
-
-        # Notifying escalation room about this event.
-        escalation_room = self.config.get("escalation_room")
-        _LOGGER.info(f"Notifying room {escalation_room} about escalation")
-        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_room))
-
     async def log_pending_alert_state(self):
         """Log the pending alerts"""
         pending = await self.get_pending_alerts()
         _LOGGER.info(f"DB: current pending alert state:")
         for alert in pending:
             _LOGGER.info(f"{alert}")
-
-    async def log_escalation_state(self):
-        """Log the escalations."""
-        escalations = await self.get_escalations()
-        _LOGGER.info(f"DB: current escalation state:")
-        for esc in escalations:
-            _LOGGER.info(f"{esc}")
 
     async def delete_by_uuid(self, uuid):
         """Delete an alert by UUID from the pending list."""

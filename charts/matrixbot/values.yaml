@@ -9,8 +9,10 @@ image:
 botUser: "user"
 botPassword: "pass"
 roomId: "room"
+# Rooms to auto-join.
 # Note: also add this remove in the skill section bellow.
-roomEscalationId: "room"
+roomEscalationId1: "room1"
+roomEscalationId2: "room2"
 
 homeserver: "https://matrix.web3.foundation"
 
@@ -19,5 +21,7 @@ skills:
   path: /app/skills/skill-eventmanager
 - name: eventmanagerack
   path: /app/skills/skill-eventmanager-ack
-  escalation_room: "room"
+  escalation_rooms:
+    - "room1"
+    - "room2"
   escalation_threshold: 3
