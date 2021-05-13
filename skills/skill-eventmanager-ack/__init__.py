@@ -31,7 +31,7 @@ def build_escalation_message(alert):
         prefix = "Reminder: "
 
     return str(
-        "{prefix}ESCALATION occurred: {severity} {name}: {message}".format(
+        "{prefix}ESCALATION: {severity} {name}: {message}".format(
             prefix=prefix,
             name=alert["name"],
             severity=alert["severity"],
@@ -41,7 +41,7 @@ def build_escalation_message(alert):
 def build_escalation_occurred(alert):
     """Build an esclation message."""
     return str(
-        "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+        "ESCALATION occurred: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"]
@@ -85,7 +85,6 @@ class EventManagerAck(Skill):
         escalation_threshold = self.config.get("escalation_threshold")
 
         if pending:
-            time.sleep(1)
             for alert in pending:
                 pending.remove(alert)
                 alert["counter"] += 1
@@ -135,11 +134,22 @@ class EventManagerAck(Skill):
 
         pending = await self.get_pending_alerts()
         if pending:
-            await message.respond("Pending alerts:")
-            time.sleep(1)
+            # First, get a list of alerts that qualify.
+            to_send = []
             for alert in pending:
+                # Room index '0' imples non-escalation.
                 if alert["room_index"] == 0:
+                    to_send.append(alert)
+
+            # If there are some alerts that qualify, notify room.
+            if to_send:
+                await message.respond("Pending alerts:")
+                time.sleep(1)
+
+                for alert in to_send:
                     await message.respond(Message(build_event_message(alert)))
+            else:
+                await message.respond("There are no pending alerts")
         else:
             await message.respond("There are no pending alerts")
 
@@ -150,15 +160,26 @@ class EventManagerAck(Skill):
 
         escalated = await self.get_pending_alerts()
         if escalated:
-            await message.respond("Escalated alerts:")
-            time.sleep(1)
+            # First, get a list of alerts that qualify.
+            to_send = []
             for alert in escalated:
+                # Room index higher than '0' imples escalation
                 if alert["room_index"] > 0:
-                    await message.respond(Message(str("ESCALATION: {severity} {name}: {message}".format(
+                    to_send.append(alert)
+
+            # If there are some alerts that qualify, notify room.
+            if to_send:
+                await message.respond("Escalated alerts:")
+                time.sleep(1)
+
+                for alert in to_send:
+                    await message.respond(Message(str("Escalation: {severity} {name}: {message}".format(
                         name=alert["name"],
                         severity=alert["severity"],
                         message=alert["message"]
                     ))))
+            else:
+                await message.respond("There are no escalated alerts")
         else:
             await message.respond("There are no escalated alerts")
 
