@@ -38,7 +38,7 @@ def build_escalation_message(alert):
             message=alert["message"]
         ))
 
-def build_escalation_occured(alert):
+def build_escalation_occurred(alert):
     """Build an esclation message."""
     return str(
         "ESCALATION: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
@@ -89,26 +89,33 @@ class EventManagerAck(Skill):
             for alert in pending:
                 pending.remove(alert)
                 alert["counter"] += 1
+                room_index = alert["room_index"]
 
-                if alert["counter"] >= escalation_threshold and len(escalation_rooms) > alert["room_index"]:
+                if alert["counter"] >= escalation_threshold and len(escalation_rooms) > room_index:
                     # Warn current room about escalation.
                     _LOGGER.info(f"ESCALATION: {alert}")
-                    await self.opsdroid.send(Message(text=build_escalation_occured(alert), target=escalation_rooms[alert["room_index"]]))
+                    if room_index == 0:
+                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_rooms[room_index]))
+                    else:
+                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_rooms[room_index]))
 
                     # Increment room index (escalations levels).
                     alert["room_index"] += 1
                     alert["counter"] = 0
 
                     # Inform next room about escalation.
-                    next_room = escalation_rooms[alert["room_index"]]
+                    next_room = escalation_rooms[room_index]
                     _LOGGER.info(f"Notifying room {next_room} about escalation")
                     await self.opsdroid.send(Message(text=build_escalation_message(alert), target=next_room))
                 else:
-                    if alert["room_index"] == 0:
+                    if room_index == 0:
+                        # Send pending alert message to main room.
                         await self.opsdroid.send(Message(build_event_message(alert)))
                     else:
-                        await self.opsdroid.send(Message(build_escalation_message(alert)))
-            pending.append(alert)
+                        # Send escalation message to corresponding escalation room.
+                        await self.opsdroid.send(Message(text=build_escalation_message(alert), target=escalation_rooms[room_index]))
+
+                pending.append(alert)
 
         # Add back updated entries
         await self.opsdroid.memory.put("pending_alerts", pending)
@@ -141,7 +148,7 @@ class EventManagerAck(Skill):
         """Respond with escalations."""
         _LOGGER.info(f"SKILL: 'escalated' called")
 
-        escalated = await self.get_escalations()
+        escalated = await self.get_pending_alerts()
         if escalated:
             await message.respond("Escalated alerts:")
             time.sleep(1)
