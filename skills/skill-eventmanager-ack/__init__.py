@@ -129,7 +129,7 @@ class EventManagerAck(Skill):
             to_send = []
             for alert in pending:
                 # Room index '0' imples non-escalation.
-                if alert["room_index"] == 0:
+                if alert["room_index"] == -1:
                     to_send.append(alert)
 
             # If there are some alerts that qualify, notify room.
@@ -138,7 +138,7 @@ class EventManagerAck(Skill):
                 time.sleep(1)
 
                 for alert in to_send:
-                    await message.respond(Message(build_event_message(alert)))
+                    await message.respond(Message(build_event_message(alert, False)))
             else:
                 await message.respond("There are no pending alerts")
         else:
@@ -155,7 +155,7 @@ class EventManagerAck(Skill):
             to_send = []
             for alert in escalated:
                 # Room index higher than '0' imples escalation
-                if alert["room_index"] > 0:
+                if alert["room_index"] > -1:
                     to_send.append(alert)
 
             # If there are some alerts that qualify, notify room.
