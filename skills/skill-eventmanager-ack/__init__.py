@@ -98,14 +98,12 @@ class EventManagerAck(Skill):
                     next_room = escalation_rooms[alert["room_index"]]
                     _LOGGER.info(f"Notifying room {next_room} about escalation")
                     await self.opsdroid.send(Message(text=build_escalation_occurred(alert, False), target=next_room))
-
-                    continue
-
-                if room_index == -1:
-                    await self.opsdroid.send(Message(build_event_message(alert, False)))
                 else:
-                    # Send escalation message to corresponding escalation room.
-                    await self.opsdroid.send(Message(text=build_event_message(alert, True), target=escalation_rooms[room_index]))
+                    if room_index == -1:
+                        await self.opsdroid.send(Message(build_event_message(alert, False)))
+                    else:
+                        # Send escalation message to corresponding escalation room.
+                        await self.opsdroid.send(Message(text=build_event_message(alert, True), target=escalation_rooms[room_index]))
 
                 pending.append(alert)
 
