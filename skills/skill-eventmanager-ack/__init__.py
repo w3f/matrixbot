@@ -76,7 +76,7 @@ class EventManagerAck(Skill):
                 alert["counter"] += 1
                 room_index = alert["room_index"]
 
-                if alert["counter"] >= escalation_threshold and len(escalation_rooms) > room_index:
+                if alert["counter"] >= escalation_threshold and len(escalation_rooms) - 1 > room_index:
                     # Warn current room about escalation.
                     _LOGGER.info(f"ESCALATION: {alert}")
                     if room_index == 0:
