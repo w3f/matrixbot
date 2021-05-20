@@ -101,7 +101,11 @@ class EventManagerAck(Skill):
                 else:
                     if room_index == 0:
                         # Send pending alert message to main room.
-                        await self.opsdroid.send(Message(build_event_message(alert, False)))
+                        is_escalation = False
+                        if alert["counter"] == -1:
+                            is_escalation = True
+
+                        await self.opsdroid.send(Message(build_event_message(alert, is_escalation)))
                     else:
                         # Send escalation message to corresponding escalation room.
                         await self.opsdroid.send(Message(text=build_event_message(alert, True), target=escalation_rooms[room_index]))
