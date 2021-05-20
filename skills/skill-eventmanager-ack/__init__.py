@@ -26,10 +26,15 @@ def build_event_message(alert, is_escalation):
             uuid=alert["uuid"]
         ))
 
-def build_escalation_occurred(alert):
+def build_escalation_occurred(alert, notify_authorities):
+    extra = ""
+    if notify_authorities:
+        extra += "notifying relevant authorities about the following incident: "
+
     """Build an esclation message."""
     return str(
-        "ESCALATION occurred: notifying relevant authorities about the following incident: {severity} {name}: {message}".format(
+        "ESCALATION occurred: {extra}{severity} {name}: {message}".format(
+            extra=extra,
             name=alert["name"],
             severity=alert["severity"],
             message=alert["message"]
@@ -80,12 +85,16 @@ class EventManagerAck(Skill):
                 room_index = alert["room_index"]
 
                 if alert["counter"] >= escalation_threshold:
+                    notify_authorities = False
+                    if len(escalation_rooms) - 1 > room_index:
+                        notify_authorities = True
+
                     # Warn current room about escalation.
                     _LOGGER.info(f"ESCALATION: {alert}")
                     if room_index == 0:
-                        await self.opsdroid.send(Message(build_escalation_occurred(alert)))
+                        await self.opsdroid.send(Message(build_escalation_occurred(alert, notify_authorities)))
                     else:
-                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_rooms[room_index]))
+                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert, notify_authorities), target=escalation_rooms[room_index]))
 
                     # Inform next room about escalation.
                     if len(escalation_rooms) - 1 > room_index:
@@ -95,7 +104,7 @@ class EventManagerAck(Skill):
 
                         next_room = escalation_rooms[room_index]
                         _LOGGER.info(f"Notifying room {next_room} about escalation")
-                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=next_room))
+                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert, False), target=next_room))
                     else:
                         alert["counter"] = -1
                 else:
