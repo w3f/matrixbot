@@ -76,7 +76,7 @@ class EventManagerAck(Skill):
                 alert["counter"] += 1
                 room_index = alert["room_index"]
 
-                if alert["counter"] >= escalation_threshold and len(escalation_rooms) - 1 > room_index:
+                if alert["counter"] >= escalation_threshold:
                     # Warn current room about escalation.
                     _LOGGER.info(f"ESCALATION: {alert}")
                     if room_index == 0:
@@ -84,14 +84,15 @@ class EventManagerAck(Skill):
                     else:
                         await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=escalation_rooms[room_index]))
 
-                    # Increment room index (escalations levels).
-                    alert["room_index"] += 1
-                    alert["counter"] = 0
-
                     # Inform next room about escalation.
-                    next_room = escalation_rooms[room_index]
-                    _LOGGER.info(f"Notifying room {next_room} about escalation")
-                    await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=next_room))
+                    if len(escalation_rooms) - 1 > room_index:
+                        # Increment room index (escalations levels).
+                        alert["room_index"] += 1
+                        alert["counter"] = 0
+
+                        next_room = escalation_rooms[room_index]
+                        _LOGGER.info(f"Notifying room {next_room} about escalation")
+                        await self.opsdroid.send(Message(text=build_escalation_occurred(alert), target=next_room))
                 else:
                     if room_index == 0:
                         # Send pending alert message to main room.
