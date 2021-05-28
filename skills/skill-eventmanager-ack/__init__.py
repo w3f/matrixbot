@@ -6,6 +6,7 @@ from opsdroid.skill import Skill
 from opsdroid.matchers import match_parse, match_crontab, match_webhook
 from aiohttp.web import Request
 from opsdroid.events import Message
+from opsdroid.constraints import constrain_rooms
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ def build_escalation_occurred(alert, notify_authorities):
         ))
 
 class EventManagerAck(Skill):
+    def __init__(self, opsdroid, config):
+        super(EventManagerAck, self).__init__(opsdroid, config)
+        self.EventManagerAck = constrain_rooms(self.config.get("escalation_rooms"))
 
     @match_webhook('webhook-ack')
     async def eventmanager_ack(self, event: Request):
