@@ -24,7 +24,7 @@ main(){
         --set botUser="${W3F_MATRIXBOT_USER}" \
         --set botPassword="${W3F_MATRIXBOT_PASSWORD}" \
         --set roomId="${W3F_MATRIXBOT_ROOM_ID}" \
-        --set escalation.roomId1="${W3F_MATRIXBOT_ESCALATION_ROOM_ID}" \
+       # --set escalation.roomId1="${W3F_MATRIXBOT_ESCALATION_ROOM_ID}" \
         --set image.tag=${CIRCLE_SHA1} \
         matrixbot \
         ./charts/matrixbot
