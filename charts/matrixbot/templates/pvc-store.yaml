@@ -1,0 +1,12 @@
+{{ if eq .Values.encryption.enabled true }}  
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-store
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+{{ end }}    

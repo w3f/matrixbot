@@ -7,12 +7,48 @@ data:
     web:
       host: '0.0.0.0'
       port: {{ .Values.port }}
+  {{ if eq .Values.sqliteDB.enabled true }}  
+    databases:
+      sqlite:
+        path: {{ .Values.sqliteDB.path }}
+        table: {{ .Values.sqliteDB.table }}
+  {{ end }}      
     skills:
 {{ toYaml .Values.skills | indent 6 }}
+        {{ if eq .Values.escalation.enabled true -}}
+        escalation_threshold: {{ .Values.escalation.threshold }}
+        escalation_rooms:
+          {{ if .Values.escalation.roomId1 -}}
+          - "escalation_room1": {{ .Values.escalation.roomId1 | quote }}
+          {{ end }} 
+          {{ if .Values.escalation.roomId2 -}}
+          - "escalation_room2": {{ .Values.escalation.roomId2 | quote }}
+          {{ end }}  
+          {{ if .Values.escalation.roomId3 -}}
+          - "escalation_room3": {{ .Values.escalation.roomId3 | quote }}
+          {{ end }}  
+        {{ end }}    
     connectors:
       matrix:
         mxid: {{ .Values.botUser | quote }}
         password: {{ .Values.botPassword | quote }}
+        homeserver: {{ .Values.homeserver }}
+        {{ if eq .Values.encryption.enabled true -}}
+        enable_encryption: True
+        store_path: {{ .Values.encryption.store_path }}
+        device_name: {{ .Values.encryption.deviceName | quote }}
+        device_id: {{ .Values.encryption.deviceId | quote }}
+        {{ end }}
         rooms:
           "main": {{ .Values.roomId | quote }}
-        homeserver: {{ .Values.homeserver }}
+          {{ if eq .Values.escalation.enabled true -}}
+          {{ if .Values.escalation.roomId1 -}}
+          "escalation_room1": {{ .Values.escalation.roomId1 | quote }}
+          {{ end }} 
+          {{ if .Values.escalation.roomId2 -}}
+          "escalation_room2": {{ .Values.escalation.roomId2 | quote }}
+          {{ end }}  
+          {{ if .Values.escalation.roomId3 -}}
+          "escalation_room3": {{ .Values.escalation.roomId3 | quote }}
+          {{ end }}  
+          {{ end }}

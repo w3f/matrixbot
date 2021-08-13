@@ -90,6 +90,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+          requires:
+            - buildImage     
       - publishImage:
           context: dockerhub-bot
           filters:
@@ -110,30 +112,3 @@ workflows:
           requires:
             - buildImage
             - integrationTests
-      # - deployW3F:
-      #     filters:
-      #       branches:
-      #         ignore: /.*/
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*/
-      #     requires:
-      #       - publishChart
-      #       - publishImage
-      # - deployComm:
-      #     filters:
-      #       branches:
-      #         ignore: /.*/
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*/
-      #     requires:
-      #       - publishChart
-      #       - publishImage
-      # - deployEthTracker:
-      #     filters:
-      #       branches:
-      #         ignore: /.*/
-      #       tags:
-      #         only: /v[0-9]+(\.[0-9]+)*/
-      #     requires:
-      #       - publishChart
-      #       - publishImage

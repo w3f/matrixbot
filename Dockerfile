@@ -1,7 +1,7 @@
-FROM opsdroid/opsdroid:v0.17.0
+FROM opsdroid/opsdroid:v0.22.0
 
-RUN adduser -D -g '' opsdroid
+#RUN adduser -D -g '' opsdroid
 
 COPY skills /app/skills
 
-USER opsdroid
+#USER opsdroid
