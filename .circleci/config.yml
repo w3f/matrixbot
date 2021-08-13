@@ -90,6 +90,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+          requires:
+            - buildImage     
       - publishImage:
           filters:
             branches:
