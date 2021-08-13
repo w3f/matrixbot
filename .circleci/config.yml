@@ -1,6 +1,6 @@
 deploy: &deploy
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - setup_remote_docker
@@ -11,7 +11,7 @@ version: 2
 jobs:
   buildImage:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - setup_remote_docker
@@ -20,7 +20,7 @@ jobs:
             /scripts/build-image.sh web3f/matrixbot .
   helmLint:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - run:
@@ -28,7 +28,7 @@ jobs:
             helm lint ./charts/matrixbot
   integrationTests:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - setup_remote_docker:
@@ -39,7 +39,7 @@ jobs:
             /scripts/integration-tests.sh
   publishImage:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - setup_remote_docker
@@ -48,7 +48,7 @@ jobs:
             /scripts/publish-image.sh web3f/matrixbot
   publishChart:
     docker:
-      - image: web3f/ci-commons:v2.0.1
+      - image: web3f/ci-commons:v2.4.4
     steps:
       - checkout
       - run:
@@ -110,30 +110,3 @@ workflows:
           requires:
             - buildImage
             - integrationTests
-      - deployW3F:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
-      - deployComm:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
-      - deployEthTracker:
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-          requires:
-            - publishChart
-            - publishImage
