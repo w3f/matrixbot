@@ -93,6 +93,7 @@ workflows:
           requires:
             - buildImage     
       - publishImage:
+          context: dockerhub-bot
           filters:
             branches:
               ignore: /.*/
@@ -102,6 +103,7 @@ workflows:
             - buildImage
             - integrationTests
       - publishChart:
+          context: github-bot
           filters:
             branches:
               ignore: /.*/
