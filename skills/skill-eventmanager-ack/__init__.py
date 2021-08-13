@@ -69,8 +69,8 @@ class EventManagerAck(Skill):
             await self.store_alert(alert_context)
             await self.opsdroid.send(Message(build_event_message(alert_context, False)))
 
-    #TOCHANGE every minute for testing pourposes
-    @match_crontab('*/1 * * * *', timezone="Europe/Rome")
+    #every hour
+    @match_crontab('0 * * * *', timezone="Europe/Rome")
     async def crontab_show_pending(self, _):
         """Notify users about the pending alerts."""
         pending = await self.get_pending_alerts()
