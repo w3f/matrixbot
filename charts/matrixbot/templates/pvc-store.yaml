@@ -1,4 +1,4 @@
-{{ if ne .Values.environment "local" }}  
+{{ if eq .Values.encryption.enabled true }}  
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:

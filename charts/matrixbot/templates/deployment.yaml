@@ -5,7 +5,7 @@ metadata:
   labels:
     app: {{ .Release.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}
   revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
@@ -32,37 +32,46 @@ spec:
             port: {{ .Values.port }}
           initialDelaySeconds: 30
           timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /stats
+            port: {{ .Values.port }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        {{ if ne .Values.environment "ci" }}
         resources:
-          limits:
-            cpu: 100m
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 100Mi
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{ end }}
         volumeMounts:
         - name: config
           mountPath: /etc/opsdroid  
+        {{ if eq .Values.sqliteDB.enabled true }}  
         - name: db
-          mountPath: /app/db
+          mountPath: {{ dir .Values.sqliteDB.path }}
+        {{ end }}  
+        {{ if eq .Values.encryption.enabled true }}
         - name: store
-          mountPath: /app/store  
+          mountPath: {{ .Values.encryption.store_path }}  
+        {{ end }}   
       volumes:
       - name: config
         configMap:
-          name: {{ .Release.Name }}        
+          name: {{ .Release.Name }} 
+      {{ if eq .Values.sqliteDB.enabled true }}            
       - name: db
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-db
         {{ else }}
         emptyDir: {}  
-        {{ end }}  
+        {{ end }}
+      {{ end }}    
+      {{ if eq .Values.encryption.enabled true }}    
       - name: store
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
         persistentVolumeClaim:
           claimName: {{ .Release.Name }}-store
         {{ else }}
         emptyDir: {}  
-        {{ end }}  
-      
-      
+        {{ end }} 
+      {{ end }}    

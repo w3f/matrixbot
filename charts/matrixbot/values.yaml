@@ -4,7 +4,7 @@ port: 8080
 
 image:
   repo: web3f/matrixbot
-  tag: latest
+  tag: v1.2.0
 
 botUser: "user"
 botPassword: "pass"
@@ -12,6 +12,36 @@ roomId: "room"
 
 homeserver: "https://matrix.web3.foundation"
 
+encryption:
+  enabled: false
+  store_path: "/app/store/"
+  deviceName: "bot"
+  deviceId: "botId"
+
+sqliteDB:
+  enabled: false
+  path: "/app/db/finance.db"
+  table: "finance"
+
+escalation:
+  enabled: false
+  threshold: 3
+  roomId1: "room1"
+  #roomId2: "room2"
+  #roomId3: "room3"
+
+
+replicas: 1
+resources:
+  limits:
+    cpu: 100m
+    memory: 300Mi
+  requests:
+    cpu: 20m
+    memory: 100Mi
+
 skills:
-  alertmanager:
-    path: /app/skills/skill-alertmanager
+- name: eventmanager
+  path: /app/skills/skill-eventmanager
+# - name: eventmanagerack
+#   path: /app/skills/skill-eventmanager-ack

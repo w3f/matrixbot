@@ -77,3 +77,11 @@ and [CircleCI CLI](https://circleci.com/docs/2.0/local-cli/) installed, then run
 ```
 $ circleci local execute --job integrationTests
 ```
+
+## ACK Feature
+
+### Escalation
+
+Due to an api limitation, is not currently possible to segregate multiple instances of the bot to listen to just a subset of the rooms. This lead to messages duplication. To solve that, a temporary fix is to create a dedicated accounts for each room list.
+
+
