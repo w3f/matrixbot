@@ -33,8 +33,8 @@ data:
         mxid: {{ .Values.botUser | quote }}
         password: {{ .Values.botPassword | quote }}
         homeserver: {{ .Values.homeserver }}
-        {{ if eq .Values.encryption.enabled true -}}
         enable_encryption: True
+        {{ if eq .Values.encryption.enabled true -}}
         store_path: {{ .Values.encryption.store_path }}
         device_name: {{ .Values.encryption.deviceName | quote }}
         device_id: {{ .Values.encryption.deviceId | quote }}

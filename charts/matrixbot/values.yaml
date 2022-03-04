@@ -4,7 +4,7 @@ port: 8080
 
 image:
   repo: web3f/matrixbot
-  tag: v1.3.1
+  # tag: latest
 
 botUser: "user"
 botPassword: "pass"
