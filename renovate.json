@@ -2,5 +2,31 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base"
+  ],
+  "argocd": {
+    "fileMatch": ["argocd/.*\\.yaml"]
+  },
+  "helmfile": {
+    "fileMatch": ["helmfile.*.yaml"]
+  },
+  "kubernetes": {
+    "fileMatch": [".*.yaml.gotmpl"]
+  },
+  "helm-values": {
+    "commitMessageTopic": "helm values {{depName}}",
+    "fileMatch": [
+      "(^|/)values.yaml$"
+    ],
+    "pinDigests": false
+  },
+  "packageRules": [
+		{
+		  "matchPackagePatterns": ["web3f/ci-commons"],
+		  "addLabels": ["web3f"],
+		  "matchUpdateTypes": ["minor", "patch"],
+		  "automerge": true,
+		  "automergeType": "pr",
+      "platformAutomerge": true
+		}
   ]
 }
