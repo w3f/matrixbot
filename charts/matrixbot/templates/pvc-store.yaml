@@ -2,7 +2,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ .Release.Name }}-store
+  name: {{ include "app.name" . }}-store
 spec:
   accessModes:
     - ReadWriteOnce
