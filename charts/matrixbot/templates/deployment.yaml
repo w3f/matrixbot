@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "app.name" . }}
   labels:
-    app: {{ .Release.Name }}
+    app: {{ include "app.name" . }}
 spec:
   {{ if or (eq .Values.sqliteDB.enabled true) (eq .Values.sqliteDB.enabled true) }}
   replicas: 1
@@ -19,16 +19,16 @@ spec:
     {{ end }}
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: {{ include "app.name" . }}
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        app: {{ include "app.name" . }}
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
       containers:
-      - name: {{ .Release.Name }}
+      - name: {{ include "app.name" . }}
         image: {{ .Values.image.repo }}:{{ .Values.image.tag | default .Chart.AppVersion }}
         imagePullPolicy: IfNotPresent
         ports:
@@ -64,12 +64,12 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: {{ .Release.Name }} 
+          name: {{ include "app.name" . }} 
       {{ if eq .Values.sqliteDB.enabled true }}            
       - name: db
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
         persistentVolumeClaim:
-          claimName: {{ .Release.Name }}-db
+          claimName: {{ include "app.name" . }}-db
         {{ else }}
         emptyDir: {}  
         {{ end }}
@@ -78,7 +78,7 @@ spec:
       - name: store
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
         persistentVolumeClaim:
-          claimName: {{ .Release.Name }}-store
+          claimName: {{ include "app.name" . }}-store
         {{ else }}
         emptyDir: {}  
         {{ end }} 
