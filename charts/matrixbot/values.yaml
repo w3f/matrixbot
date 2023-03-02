@@ -1,5 +1,7 @@
 environment: production
 
+logLevel: info
+
 port: 8080
 
 image:
