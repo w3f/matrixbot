@@ -35,9 +35,9 @@ escalation:
 
 replicas: 1
 resources:
-  limits:
-    cpu: 100m
-    memory: 300Mi
+  #limits:
+  #  cpu: 100m
+  #  memory: 300Mi
   requests:
     cpu: 20m
     memory: 100Mi
