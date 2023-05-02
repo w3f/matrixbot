@@ -38,14 +38,18 @@ spec:
           httpGet:
             path: /stats
             port: {{ .Values.port }}
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.failureThreshold }}
         livenessProbe:
           httpGet:
             path: /stats
             port: {{ .Values.port }}
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: {{ .Values.probes.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.periodSeconds }}
+          timeoutSeconds: {{ .Values.probes.timeoutSeconds }}
+          failureThreshold: {{ .Values.probes.failureThreshold }}
         {{ if ne .Values.environment "ci" }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}

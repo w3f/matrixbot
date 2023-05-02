@@ -42,6 +42,12 @@ resources:
     cpu: 20m
     memory: 100Mi
 
+probes:
+  initialDelaySeconds: 90
+  periodSeconds: 30
+  timeoutSeconds: 30
+  failureThreshold: 3
+
 skills:
 - name: eventmanager
   path: /app/skills/skill-eventmanager
