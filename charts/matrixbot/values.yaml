@@ -43,10 +43,10 @@ resources:
     memory: 100Mi
 
 probes:
-  initialDelaySeconds: 90
-  periodSeconds: 30
-  timeoutSeconds: 30
-  failureThreshold: 3
+  initialDelaySeconds: 30
+  periodSeconds: 10 #default
+  timeoutSeconds: 1 #default
+  failureThreshold: 3 #default
 
 skills:
 - name: eventmanager
