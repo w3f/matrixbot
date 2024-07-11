@@ -87,6 +87,7 @@ workflows:
           requires:
             - helmLint              
       - integrationTests:
+          context: web3-matrixbot
           filters:
             tags:
               only: /.*/

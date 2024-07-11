@@ -23,23 +23,23 @@ main(){
 
     /scripts/build-helm.sh \
         --set environment=ci \
-        --set botUser="${W3F_MATRIXBOT_USER}" \
-        --set botPassword="${W3F_MATRIXBOT_PASSWORD}" \
-        --set roomId="${W3F_MATRIXBOT_ROOM_ID}" \
+        --set botUser="${WEB3BOT_USER}" \
+        --set botPassword="${WEB3BOT_PASSWORD}" \
+        --set roomId="${WEB3BOT_ROOM_ID}" \
         --set image.tag=${CIRCLE_SHA1} \
         matrixbot \
         ./charts/matrixbot
 
     /scripts/build-helm.sh \
         --set environment=ci \
-        --set botUser="${W3F_MATRIXBOT_USER}" \
-        --set botPassword="${W3F_MATRIXBOT_PASSWORD}" \
-        --set roomId="${W3F_MATRIXBOT_ROOM_ID}" \
+        --set botUser="${WEB3BOT_USER}" \
+        --set botPassword="${WEB3BOT_PASSWORD}" \
+        --set roomId="${WEB3BOT_ROOM_ID}" \
         --set image.tag=${CIRCLE_SHA1} \
         --set encryption.enabled=true \
         --set sqliteDB.enabled=true \
         --set escalation.enabled=true \
-        --set escalation.roomId1="${W3F_MATRIXBOT_ROOM_ID}" \
+        --set escalation.roomId1="${WEB3BOT_ROOM_ID}" \
         ack \
         ./charts/matrixbot    
 
