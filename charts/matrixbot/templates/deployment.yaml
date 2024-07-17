@@ -5,14 +5,14 @@ metadata:
   labels:
     app: {{ include "app.name" . }}
 spec:
-  {{ if or (eq .Values.sqliteDB.enabled true) (eq .Values.sqliteDB.enabled true) }}
+  {{ if eq .Values.encryption.enabled true }}  
   replicas: 1
   {{ else }}
   replicas: {{ .Values.replicas }}
   {{ end }}
   revisionHistoryLimit: 3
   strategy:
-    {{ if or (eq .Values.sqliteDB.enabled true) (eq .Values.sqliteDB.enabled true) }}
+    {{ if eq .Values.encryption.enabled true }}  
     type: Recreate
     {{ else }}
     type: RollingUpdate
@@ -27,6 +27,18 @@ spec:
       annotations:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
     spec:
+      {{ if eq .Values.encryption.enabled true }}   
+      initContainers:
+      - name: volume-mount-permissions-data
+        image: busybox
+        command: ["sh", "-c", "chown -R 1001:1001 {{ .Values.encryption.store_path }}"]
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
+        volumeMounts:
+        - name: store
+          mountPath: {{ .Values.encryption.store_path }}
+      {{ end }}     
       containers:
       - name: {{ include "app.name" . }}
         image: {{ .Values.image.repo }}:{{ .Values.image.tag | default .Chart.AppVersion }}
@@ -57,10 +69,6 @@ spec:
         volumeMounts:
         - name: config
           mountPath: /etc/opsdroid  
-        {{ if eq .Values.sqliteDB.enabled true }}  
-        - name: db
-          mountPath: {{ dir .Values.sqliteDB.path }}
-        {{ end }}  
         {{ if eq .Values.encryption.enabled true }}
         - name: store
           mountPath: {{ .Values.encryption.store_path }}  
@@ -68,16 +76,7 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: {{ include "app.name" . }} 
-      {{ if eq .Values.sqliteDB.enabled true }}            
-      - name: db
-        {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
-        persistentVolumeClaim:
-          claimName: {{ include "app.name" . }}-db
-        {{ else }}
-        emptyDir: {}  
-        {{ end }}
-      {{ end }}    
+          name: {{ include "app.name" . }}   
       {{ if eq .Values.encryption.enabled true }}    
       - name: store
         {{ if and (ne .Values.environment "ci") (ne .Values.environment "local") }}
