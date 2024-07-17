@@ -16,22 +16,9 @@ homeserver: "https://matrix.web3.foundation"
 
 encryption:
   enabled: false
-  store_path: "/app/store/"
-  deviceName: "bot"
+  store_path: "/home/opsdroid/store/"
+  deviceName: "botName"
   deviceId: "botId"
-
-sqliteDB:
-  enabled: false
-  path: "/app/db/finance.db"
-  table: "finance"
-
-escalation:
-  enabled: false
-  threshold: 3
-  roomId1: "room1"
-  #roomId2: "room2"
-  #roomId3: "room3"
-
 
 replicas: 1
 resources:
@@ -44,12 +31,10 @@ resources:
 
 probes:
   initialDelaySeconds: 30
-  periodSeconds: 10 #default
-  timeoutSeconds: 1 #default
+  periodSeconds: 30 #default
+  timeoutSeconds: 5 #default
   failureThreshold: 3 #default
 
 skills:
 - name: eventmanager
   path: /app/skills/skill-eventmanager
-# - name: eventmanagerack
-#   path: /app/skills/skill-eventmanager-ack
