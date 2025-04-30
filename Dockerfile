@@ -1,4 +1,4 @@
-FROM ghcr.io/opsdroid/opsdroid:v0.29.1
+FROM ghcr.io/opsdroid/opsdroid:v0.31.0
 
 #RUN adduser -D -g '' opsdroid
 
